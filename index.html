@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blood Test Dashboard</title>
+<style>
+:root{--bg:#0f1117;--card:#1a1d27;--border:#2a2e3d;--text:#e4e6eb;--muted:#8b8fa3;--accent:#6366f1;--green:#22c55e;--yellow:#eab308;--red:#ef4444;--blue:#3b82f6;--r:10px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.hdr{background:linear-gradient(135deg,#1e1b4b,#312e81,#1e1b4b);padding:20px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.hdr-in{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.hdr h1{font-size:1.3rem;font-weight:700}.hdr h1 b{color:#818cf8}
+.hdr-meta{font-size:.82rem;color:var(--muted)}
+.search{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.88rem;width:220px;outline:none}
+.search:focus{border-color:var(--accent)}
+.wrap{max-width:1200px;margin:0 auto;padding:16px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.sc{background:var(--card);border-radius:var(--r);padding:14px;border:1px solid var(--border);text-align:center}
+.sc .n{font-size:1.6rem;font-weight:700}.sc .l{font-size:.75rem;color:var(--muted);margin-top:2px}
+.attn-box{background:var(--card);border:1px solid var(--red);border-radius:var(--r);padding:14px 18px;margin-bottom:20px}
+.attn-box h3{font-size:.88rem;color:var(--red);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.attn-list{display:flex;flex-wrap:wrap;gap:6px}
+.attn-pill{background:rgba(239,68,68,0.15);color:#fca5a5;padding:4px 10px;border-radius:6px;font-size:.75rem;cursor:pointer;border:1px solid rgba(239,68,68,0.3)}
+.attn-pill:hover{background:rgba(239,68,68,0.25)}
+.tabs{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tb{padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;white-space:nowrap;background:var(--card);border:1px solid var(--border);color:var(--muted);user-select:none}
+.tb:hover{color:var(--text)}.tb.a{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mg{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.mc{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:12px 16px;cursor:pointer;display:grid;grid-template-columns:200px 100px 1fr 70px;align-items:center;gap:14px;transition:border-color .2s}
+.mc:hover{border-color:var(--accent)}
+.mc-h{min-width:0}.mc-nm{font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-u{font-size:.7rem;color:var(--muted)}
+.mc-v{display:flex;flex-direction:column}
+.mc-cur{font-size:1.15rem;font-weight:700;line-height:1.2}
+.mc-tr{font-size:.75rem;font-weight:600}
+.mc-tr.up{color:var(--red)}.mc-tr.down{color:var(--green)}.mc-tr.stable{color:var(--muted)}
+.mc-hs{display:flex;flex-direction:column;align-items:flex-end;font-size:.7rem;color:var(--muted);gap:1px;white-space:nowrap}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.dot.optimal{background:var(--green)}.dot.normal{background:var(--yellow)}.dot.high,.dot.low{background:var(--red)}.dot.attention{background:var(--red)}.dot.unknown{background:var(--muted)}
+svg.spark{display:block;width:100%;height:40px}
+svg.spark polyline{fill:none;stroke:#6366f1;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+svg.spark circle{fill:#6366f1}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;justify-content:center;align-items:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:var(--card);border-radius:14px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;border:1px solid var(--border);position:relative}
+.modal-x{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.modal h2{font-size:1.2rem;margin-bottom:3px}
+.modal .mu{color:var(--muted);font-size:.82rem;margin-bottom:14px}
+.chart-wrap{position:relative;width:100%;height:260px;margin-bottom:16px}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:.72rem;color:var(--muted)}
+.chart-legend span{display:flex;align-items:center;gap:4px}
+.chart-legend .swatch{width:10px;height:10px;border-radius:2px;display:inline-block}
+.modal table{width:100%;border-collapse:collapse;font-size:.82rem}
+.modal th,.modal td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.modal th{color:var(--muted);font-weight:600}
+.modal .ref{margin-top:14px;padding:10px;background:var(--bg);border-radius:8px;font-size:.78rem;color:var(--muted)}
+.prov-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.68rem;font-weight:600;color:#fff;vertical-align:middle}
+.editor{margin-top:28px;background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
+.editor summary{padding:16px 20px;cursor:pointer;font-size:1rem;font-weight:600;list-style:none}
+.editor summary::-webkit-details-marker{display:none}
+.editor summary::before{content:'+ ';color:var(--accent)}
+.editor[open] summary::before{content:'- '}
+.editor-body{padding:0 20px 20px}
+.editor .info{font-size:.78rem;color:var(--muted);margin-bottom:10px;line-height:1.5}
+.editor textarea{width:100%;min-height:140px;padding:10px;font-family:monospace;font-size:.78rem;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;resize:vertical}
+.btn{padding:8px 16px;border-radius:8px;border:none;font-size:.82rem;font-weight:600;cursor:pointer}
+.btn-p{background:var(--accent);color:#fff;margin-top:10px}.btn-s{background:var(--border);color:var(--text);margin-top:10px;margin-left:6px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:10px 18px;border-radius:8px;font-size:.82rem;z-index:300;display:none;font-weight:600}
+.toast.show{display:block}
+@media(max-width:768px){
+  .mc{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:6px 10px}
+  .mc-h{grid-column:1;grid-row:1}.mc-v{grid-column:2;grid-row:1;align-items:flex-end}
+  svg.spark{grid-column:1/-1;grid-row:2;height:36px}.mc-hs{display:none}
+  .hdr h1{font-size:1.1rem}.search{width:100%}.sum{grid-template-columns:repeat(2,1fr)}.wrap{padding:10px}
+  .modal{padding:18px;max-height:100vh;border-radius:0;max-width:100%;height:100vh}
+  .chart-wrap{height:220px}
+}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="hdr-in">
+<div><h1>Blood Test <b>Dashboard</b></h1><div class="hdr-meta" id="hdr-meta"></div></div>
+<input type="text" class="search" placeholder="Search markers..." id="si" oninput="render()">
+</div></div>
+
+<div class="wrap">
+<div class="sum" id="sum"></div>
+<div id="attn"></div>
+<div class="tabs" id="tabs"></div>
+<div class="mg" id="mg"></div>
+
+<details class="editor">
+<summary>Add New Blood Test Results</summary>
+<div class="editor-body">
+<div class="info">Paste new results: <strong>Biomarker, Value, Unit</strong> (one per line). Set date first.</div>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+<label style="font-size:.82rem;color:var(--muted)">Test Date:</label>
+<input type="date" id="nd" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.82rem">
+<label style="font-size:.82rem;color:var(--muted);margin-left:6px">Provider:</label>
+<input type="text" id="np" placeholder="e.g. Randox" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.82rem;width:120px">
+</div>
+<textarea id="nv" placeholder="Alanine Aminotransferase (ALT), 28, U/l&#10;Albumin, 45.1, g/l&#10;BMI, 24.8, kg/m²"></textarea>
+<div>
+<button class="btn btn-p" onclick="addResults()">Add Results</button>
+<button class="btn btn-s" onclick="exportJ()">Export JSON</button>
+<button class="btn btn-s" onclick="document.getElementById('imp').click()">Import JSON</button>
+<input type="file" id="imp" accept=".json" style="display:none" onchange="importJ(event)">
+</div>
+</div>
+</details>
+</div>
+
+<div class="overlay" id="ov" onclick="if(event.target===this)closeModal()">
+<div class="modal" onclick="event.stopPropagation()">
+<button class="modal-x" onclick="closeModal()">&times;</button>
+<h2 id="mt"></h2><div class="mu" id="mu"></div>
+<div class="chart-legend" id="cleg"></div>
+<div class="chart-wrap"><canvas id="dc"></canvas></div>
+<table id="mtb"></table>
+<div class="ref" id="mr"></div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3/dist/chartjs-plugin-annotation.min.js"></script>
+<script>
+var cat='All';
+var detailChart=null;
+
+function getProvider(marker,date){
+  if(marker.p&&marker.p[date])return marker.p[date];
+  return D.dateSources[date]||'Unknown';
+}
+
+function provColor(prov){return D.providerColors[prov]||'#8b8fa3';}
+
+function fmtD(d){return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+function lastDate(){
+  var all={};
+  for(var c in D.categories)for(var n in D.categories[c])for(var d in D.categories[c][n].v)all[d]=1;
+  var ds=Object.keys(all).sort();
+  return ds.length?ds[ds.length-1]:null;
+}
+
+function status(m){
+  var ds=Object.keys(m.v).sort(),last=m.v[ds[ds.length-1]];
+  if(last==null)return'unknown';
+  var n=typeof last==='number'?last:parseFloat(last);
+  if(isNaN(n))return'unknown';
+  // Check Attia range first
+  if(m.attia){
+    var a=m.attia;
+    if(a.low!=null&&a.high!=null){if(n>=a.low&&n<=a.high)return'optimal';}
+    else if(a.high!=null){if(n<=a.high)return'optimal';}
+    else if(a.low!=null){if(n>=a.low)return'optimal';}
+  }
+  // Lab reference range
+  var r=m.r.toLowerCase();
+  if(r==='n/a')return'unknown';
+  var p,re,inRange=false;
+  // Check all range tiers (e.g. "90-119.9 Optimal, 120-129.9 Normal")
+  re=/(\d+\.?\d*)\s*[-–]\s*(\d+\.?\d*)\s*(?:optimal|normal)/g;
+  while((p=re.exec(r))!==null){
+    if(n>=parseFloat(p[1])&&n<=parseFloat(p[2])){return m.attia?'normal':'optimal';}
+    inRange=true;
+  }
+  // <X threshold: optimal if below, attention if above
+  p=r.match(/<\s*(\d+\.?\d*)\s*(?:optimal|normal|negative|desirable|low risk)/);
+  if(p){
+    if(n<parseFloat(p[1]))return m.attia?'normal':'optimal';
+    inRange=true;
+  }
+  // >X threshold: optimal if above
+  p=r.match(/>\s*(\d+\.?\d*)\s*(?:optimal|normal)/);
+  if(p){
+    if(n>parseFloat(p[1]))return m.attia?'normal':'optimal';
+    inRange=true;
+  }
+  // Explicit danger thresholds
+  p=r.match(/(?:>|>=)\s*(\d+\.?\d*)\s*(?:high|obese|very high|diabetic|positive)/);
+  if(p&&n>=parseFloat(p[1]))return'attention';
+  p=r.match(/<\s*(\d+\.?\d*)\s*(?:deficient|underweight|high risk|very low)/);
+  if(p&&n<parseFloat(p[1]))return'attention';
+  // If we matched a range/threshold pattern but value was outside it, flag attention
+  if(inRange)return'attention';
+  return m.attia?'normal':'unknown';
+}
+
+function statusLabel(s){
+  return s==='optimal'?'Optimal':s==='normal'?'Normal':s==='attention'?'Attention':s==='high'?'High':s==='low'?'Low':'Unknown';
+}
+
+function trend(v){
+  var ds=Object.keys(v).sort();
+  if(ds.length<2)return{d:'stable',p:0};
+  var a=v[ds[ds.length-1]],b=v[ds[ds.length-2]];
+  if(typeof a!=='number'||typeof b!=='number')return{d:'stable',p:0};
+  var p=b===0?0:((a-b)/Math.abs(b)*100);
+  if(Math.abs(p)<1)return{d:'stable',p:0};
+  return{d:p>0?'up':'down',p:Math.abs(p).toFixed(1)};
+}
+
+function spark(vals){
+  var ds=Object.keys(vals).sort();
+  var ns=[];for(var i=0;i<ds.length;i++){var x=vals[ds[i]];if(typeof x==='number')ns.push(x);}
+  if(ns.length<2)return'<svg class="spark" viewBox="0 0 200 40"></svg>';
+  var mn=ns[0],mx=ns[0];
+  for(var i=1;i<ns.length;i++){if(ns[i]<mn)mn=ns[i];if(ns[i]>mx)mx=ns[i];}
+  var rng=mx-mn;if(rng===0)rng=1;
+  var pts=[];
+  for(var i=0;i<ns.length;i++){
+    var px=8+i*(184/(ns.length-1));
+    var py=36-((ns[i]-mn)/rng)*28;
+    pts.push(px.toFixed(0)+','+py.toFixed(0));
+  }
+  var cs='';for(var i=0;i<pts.length;i++){var p=pts[i].split(',');cs+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3"/>';}
+  return'<svg class="spark" viewBox="0 0 200 40"><polyline points="'+pts.join(' ')+'"/>'+cs+'</svg>';
+}
+
+function render(){
+  // Header meta
+  var ld=lastDate();
+  document.getElementById('hdr-meta').textContent='Jai Kharbanda \u00B7 DOB: 4 Jul 1982'+(ld?' \u00B7 Last test: '+fmtD(ld):'');
+
+  var q=document.getElementById('si').value.toLowerCase();
+  var tot=0,opt=0,nrm=0,att=0;
+  var attnItems=[];
+  for(var c in D.categories)for(var n in D.categories[c]){
+    var s=status(D.categories[c][n]);if(s==='unknown')continue;
+    tot++;
+    if(s==='optimal')opt++;
+    else if(s==='normal')nrm++;
+    else{att++;attnItems.push({cat:c,name:n,marker:D.categories[c][n]});}
+  }
+  var allD={};for(var c in D.categories)for(var n in D.categories[c])for(var d in D.categories[c][n].v)allD[d]=1;
+  var nDates=Object.keys(allD).length;
+  var nMarkers=0;for(var c in D.categories)for(var n in D.categories[c])nMarkers++;
+  document.getElementById('sum').innerHTML=
+    '<div class="sc"><div class="n" style="color:var(--blue)">'+nMarkers+'</div><div class="l">Biomarkers</div></div>'+
+    '<div class="sc"><div class="n" style="color:var(--green)">'+opt+'</div><div class="l">Optimal</div></div>'+
+    '<div class="sc"><div class="n" style="color:var(--yellow)">'+nrm+'</div><div class="l">Normal</div></div>'+
+    '<div class="sc"><div class="n" style="color:var(--red)">'+att+'</div><div class="l">Attention</div></div>'+
+    '<div class="sc"><div class="n" style="color:var(--accent)">'+nDates+'</div><div class="l">Test Dates</div></div>';
+
+  // Attention box
+  var attnEl=document.getElementById('attn');
+  if(attnItems.length>0){
+    var ah='<div class="attn-box"><h3>\u26A0 Needs Attention ('+attnItems.length+')</h3><div class="attn-list">';
+    for(var i=0;i<attnItems.length;i++){
+      var ai=attnItems[i];
+      var ds=Object.keys(ai.marker.v).sort();
+      var lv=ai.marker.v[ds[ds.length-1]];
+      ah+='<div class="attn-pill" data-cat="'+ai.cat.replace(/"/g,'&quot;')+'" data-nm="'+ai.name.replace(/"/g,'&quot;')+'">'+ai.name+': '+lv+' '+ai.marker.u+'</div>';
+    }
+    ah+='</div></div>';
+    attnEl.innerHTML=ah;
+    attnEl.querySelectorAll('.attn-pill').forEach(function(el){
+      el.onclick=function(){openM(el.getAttribute('data-cat'),el.getAttribute('data-nm'));};
+    });
+  }else{attnEl.innerHTML='';}
+
+  // Tabs
+  var cats=['All'];for(var c in D.categories)cats.push(c);
+  var th='';for(var i=0;i<cats.length;i++){
+    th+='<div class="tb'+(cats[i]===cat?' a':'')+'" data-c="'+i+'">'+cats[i]+'</div>';
+  }
+  var te=document.getElementById('tabs');te.innerHTML=th;
+  te.querySelectorAll('.tb').forEach(function(el,i){
+    el.onclick=function(){cat=cats[i];render();};
+  });
+
+  // Markers
+  var h='';
+  for(var cn in D.categories){
+    if(cat!=='All'&&cat!==cn)continue;
+    for(var nm in D.categories[cn]){
+      if(q&&nm.toLowerCase().indexOf(q)<0&&cn.toLowerCase().indexOf(q)<0)continue;
+      var m=D.categories[cn][nm];
+      var ds=Object.keys(m.v).sort();
+      var last=m.v[ds[ds.length-1]];
+      if(last==null||last===undefined)continue;
+      var t=trend(m.v);
+      var s=status(m);
+      var arrow=t.d==='up'?'&#8593;':t.d==='down'?'&#8595;':'&#8594;';
+      var tc=t.d;
+      var prev=ds.slice(0,-1).reverse();
+      var hist='';for(var i=0;i<Math.min(prev.length,3);i++)hist+='<span>'+fmtD(prev[i])+': '+m.v[prev[i]]+'</span>';
+      var sv=spark(m.v);
+      h+='<div class="mc" data-cat="'+cn.replace(/"/g,'&quot;')+'" data-nm="'+nm.replace(/"/g,'&quot;')+'">';
+      h+='<div class="mc-h"><div class="mc-nm"><span class="dot '+s+'"></span>'+nm+'</div><div class="mc-u">'+m.u+'</div></div>';
+      h+='<div class="mc-v"><div class="mc-cur">'+last+'</div>';
+      h+=(t.p>0?'<div class="mc-tr '+tc+'">'+arrow+' '+t.p+'%</div>':'<div class="mc-tr stable">&#8594; stable</div>');
+      h+='</div>'+sv+'<div class="mc-hs">'+hist+'</div></div>';
+    }
+  }
+  var mg=document.getElementById('mg');
+  mg.innerHTML=h||'<div style="color:var(--muted);padding:32px;text-align:center">No markers found.</div>';
+  mg.querySelectorAll('.mc').forEach(function(el){
+    el.onclick=function(){openM(el.getAttribute('data-cat'),el.getAttribute('data-nm'));};
+  });
+}
+
+function closeModal(){
+  document.getElementById('ov').classList.remove('open');
+  if(detailChart){detailChart.destroy();detailChart=null;}
+}
+
+function openM(cn,nm){
+  var m=D.categories[cn]&&D.categories[cn][nm];
+  if(!m)return;
+  document.getElementById('mt').textContent=nm;
+  document.getElementById('mu').textContent=m.u+' \u00B7 '+cn;
+
+  // Reference text
+  var refHtml='<strong>Lab Reference:</strong> '+m.r;
+  if(m.attia)refHtml+='<br><strong>Peter Attia Optimal:</strong> '+m.attia.label;
+  document.getElementById('mr').innerHTML=refHtml;
+
+  var ds=Object.keys(m.v).sort();
+
+  // Table with provider badges
+  var tb='<thead><tr><th>Date</th><th>Value</th><th>Provider</th><th>Change</th><th>Status</th></tr></thead><tbody>';
+  for(var i=0;i<ds.length;i++){
+    var val=m.v[ds[i]],chg='-';
+    if(i>0&&typeof val==='number'&&typeof m.v[ds[i-1]]==='number'){
+      var df=val-m.v[ds[i-1]];var pc=(df/Math.abs(m.v[ds[i-1]])*100).toFixed(1);
+      chg=(df>0?'+':'')+df.toFixed(2)+' ('+(df>0?'+':'')+pc+'%)';
+    }
+    var st=status({v:{[ds[i]]:val},r:m.r,attia:m.attia});
+    var prov=getProvider(m,ds[i]);
+    var pc=provColor(prov);
+    tb+='<tr><td>'+fmtD(ds[i])+'</td><td><strong>'+val+'</strong> '+m.u+'</td>';
+    tb+='<td><span class="prov-badge" style="background:'+pc+'">'+prov+'</span></td>';
+    tb+='<td>'+chg+'</td><td><span class="dot '+st+'"></span>'+statusLabel(st)+'</td></tr>';
+  }
+  tb+='</tbody>';
+  document.getElementById('mtb').innerHTML=tb;
+
+  // Chart legend
+  var legHtml='<span><span class="swatch" style="background:#6366f1"></span>Values</span>';
+  legHtml+='<span><span class="swatch" style="background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.6)"></span>Lab Range</span>';
+  if(m.attia)legHtml+='<span><span class="swatch" style="background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.5)"></span>Attia Optimal</span>';
+  document.getElementById('cleg').innerHTML=legHtml;
+
+  // Chart.js
+  if(detailChart){detailChart.destroy();detailChart=null;}
+  var canvas=document.getElementById('dc');
+  var labels=[];var values=[];var bgColors=[];
+  for(var i=0;i<ds.length;i++){
+    labels.push(fmtD(ds[i]));
+    values.push(typeof m.v[ds[i]]==='number'?m.v[ds[i]]:null);
+    bgColors.push(provColor(getProvider(m,ds[i])));
+  }
+
+  // Parse reference range for annotation
+  var annotations={};
+  var rLow=null,rHigh=null;
+  var rr=m.r.toLowerCase();
+  var rp=rr.match(/(\d+\.?\d*)\s*[-–]\s*(\d+\.?\d*)\s*(?:optimal|normal)/);
+  if(rp){rLow=parseFloat(rp[1]);rHigh=parseFloat(rp[2]);}
+  else{
+    var rpL=rr.match(/>\s*(\d+\.?\d*)\s*(?:optimal|normal)/);
+    var rpH=rr.match(/<\s*(\d+\.?\d*)\s*(?:optimal|normal|negative|desirable|low risk)/);
+    if(rpL)rLow=parseFloat(rpL[1]);
+    if(rpH)rHigh=parseFloat(rpH[1]);
+  }
+  if(rLow!=null||rHigh!=null){
+    annotations.labRange={
+      type:'box',
+      yMin:rLow!=null?rLow:undefined,
+      yMax:rHigh!=null?rHigh:undefined,
+      backgroundColor:'rgba(34,197,94,0.08)',
+      borderColor:'rgba(34,197,94,0.3)',
+      borderWidth:1
+    };
+  }
+  if(m.attia){
+    annotations.attiaRange={
+      type:'box',
+      yMin:m.attia.low!=null?m.attia.low:undefined,
+      yMax:m.attia.high!=null?m.attia.high:undefined,
+      backgroundColor:'rgba(99,102,241,0.1)',
+      borderColor:'rgba(99,102,241,0.35)',
+      borderWidth:1,
+      borderDash:[4,4]
+    };
+  }
+
+  detailChart=new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[{
+        data:values,
+        borderColor:'#6366f1',
+        backgroundColor:'rgba(99,102,241,0.1)',
+        fill:true,
+        tension:0.3,
+        pointRadius:5,
+        pointHoverRadius:7,
+        pointBackgroundColor:bgColors,
+        pointBorderColor:'#6366f1',
+        pointBorderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        annotation:{annotations:annotations},
+        tooltip:{
+          backgroundColor:'#1a1d27',
+          titleColor:'#e4e6eb',
+          bodyColor:'#e4e6eb',
+          borderColor:'#2a2e3d',
+          borderWidth:1,
+          padding:10,
+          callbacks:{
+            label:function(ctx){return ctx.parsed.y+' '+m.u;}
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:'#8b8fa3',font:{size:11}},
+          grid:{color:'rgba(42,46,61,0.5)'}
+        },
+        y:{
+          ticks:{color:'#8b8fa3',font:{size:11}},
+          grid:{color:'rgba(42,46,61,0.5)'}
+        }
+      }
+    }
+  });
+
+  document.getElementById('ov').classList.add('open');
+}
+
+function addResults(){
+  var d=document.getElementById('nd').value,t=document.getElementById('nv').value.trim();
+  var prov=document.getElementById('np').value.trim()||'Manual';
+  if(!d){alert('Set date first.');return;}if(!t){alert('Enter results.');return;}
+  // Register provider
+  if(!D.dateSources[d])D.dateSources[d]=prov;
+  if(!D.providerColors[prov])D.providerColors[prov]='#8b8fa3';
+  var lines=t.split('\n'),added=0;
+  for(var i=0;i<lines.length;i++){
+    var parts=lines[i].split(',');if(parts.length<2)continue;
+    var nm=parts[0].trim(),val=parseFloat(parts[1].trim()),u=(parts[2]||'').trim();
+    if(isNaN(val))continue;
+    var found=false;
+    for(var c in D.categories){if(D.categories[c][nm]){D.categories[c][nm].v[d]=val;found=true;break;}}
+    if(!found){if(!D.categories['Other'])D.categories['Other']={};D.categories['Other'][nm]={u:u,r:'N/A',v:{}}; D.categories['Other'][nm].v[d]=val;}
+    added++;
+  }
+  document.getElementById('nv').value='';
+  showToast('Added '+added+' results for '+fmtD(d));
+  render();
+}
+
+function showToast(msg){
+  var ts=document.getElementById('toast');ts.textContent=msg;ts.classList.add('show');
+  setTimeout(function(){ts.classList.remove('show');},3000);
+}
+
+function exportJ(){
+  var b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='blood_test_data.json';a.click();
+  showToast('Exported');
+}
+
+function importJ(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    try{
+      var d=JSON.parse(ev.target.result);
+      if(d.categories){
+        D.categories=d.categories;
+        if(d.patient)D.patient=d.patient;
+        if(d.dateSources)D.dateSources=d.dateSources;
+        if(d.providerColors)D.providerColors=d.providerColors;
+        render();
+        showToast('Imported successfully');
+      }else{alert('Invalid format');}
+    }catch(err){alert('Error: '+err.message);}
+  };r.readAsText(f);
+}
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+render();
+</script>
+</body>
+</html>
