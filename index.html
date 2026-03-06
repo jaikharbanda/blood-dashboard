@@ -56,6 +56,15 @@ svg.spark circle{fill:#6366f1}
 .modal th,.modal td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
 .modal th{color:var(--muted);font-weight:600}
 .modal .ref{margin-top:14px;padding:10px;background:var(--bg);border-radius:8px;font-size:.78rem;color:var(--muted)}
+.modal .status-box{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.modal .status-tag{padding:5px 12px;border-radius:8px;font-size:.82rem;font-weight:600;display:flex;align-items:center;gap:5px}
+.modal .status-tag.optimal{background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3)}
+.modal .status-tag.normal{background:rgba(234,179,8,0.15);color:#facc15;border:1px solid rgba(234,179,8,0.3)}
+.modal .status-tag.attention{background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3)}
+.modal .status-tag.unknown{background:rgba(139,143,163,0.15);color:var(--muted);border:1px solid rgba(139,143,163,0.3)}
+.modal .range-info{font-size:.78rem;color:var(--muted);line-height:1.6}
+.modal .range-info .ri-label{color:#818cf8;font-weight:600}
+.modal .range-info .ri-lab{color:var(--green);font-weight:600}
 .prov-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.68rem;font-weight:600;color:#fff;vertical-align:middle}
 .editor{margin-top:28px;background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
 .editor summary{padding:16px 20px;cursor:pointer;font-size:1rem;font-weight:600;list-style:none}
@@ -116,6 +125,8 @@ svg.spark circle{fill:#6366f1}
 <div class="modal" onclick="event.stopPropagation()">
 <button class="modal-x" onclick="closeModal()">&times;</button>
 <h2 id="mt"></h2><div class="mu" id="mu"></div>
+<div class="status-box" id="sbox"></div>
+<div class="range-info" id="rinfo"></div>
 <div class="chart-legend" id="cleg"></div>
 <div class="chart-wrap"><canvas id="dc"></canvas></div>
 <table id="mtb"></table>
@@ -316,26 +327,48 @@ function openM(cn,nm){
   document.getElementById('mt').textContent=nm;
   document.getElementById('mu').textContent=m.u+' \u00B7 '+cn;
 
-  // Reference text
+  // Status info box
+  var s=status(m);
+  var sds=Object.keys(m.v).sort();
+  var lastVal=m.v[sds[sds.length-1]];
+  var sboxHtml='<div class="status-tag '+s+'"><span class="dot '+s+'"></span>'+statusLabel(s)+'</div>';
+  sboxHtml+='<div style="display:flex;align-items:center;font-size:.95rem;font-weight:700">'+lastVal+' '+m.u+'</div>';
+  document.getElementById('sbox').innerHTML=sboxHtml;
+
+  // Range info with clear explanation
+  var rinfoHtml='<span class="ri-lab">Lab Range:</span> '+m.r;
+  if(m.attia){
+    rinfoHtml+='<br><span class="ri-label">Peter Attia Ideal:</span> '+m.attia.label;
+    if(s==='optimal')rinfoHtml+=' — <span style="color:#4ade80">✓ within Attia range</span>';
+    else if(s==='normal')rinfoHtml+=' — <span style="color:#facc15">within lab range but outside Attia ideal</span>';
+    else if(s==='attention')rinfoHtml+=' — <span style="color:#fca5a5">outside lab range</span>';
+  }
+  document.getElementById('rinfo').innerHTML=rinfoHtml;
+
+  // Reference footer
   var refHtml='<strong>Lab Reference:</strong> '+m.r;
   if(m.attia)refHtml+='<br><strong>Peter Attia Optimal:</strong> '+m.attia.label;
   document.getElementById('mr').innerHTML=refHtml;
 
   var ds=Object.keys(m.v).sort();
 
-  // Table with provider badges
+  // Table with provider badges — most recent first
+  var dsRev=ds.slice().reverse();
   var tb='<thead><tr><th>Date</th><th>Value</th><th>Provider</th><th>Change</th><th>Status</th></tr></thead><tbody>';
-  for(var i=0;i<ds.length;i++){
-    var val=m.v[ds[i]],chg='-';
-    if(i>0&&typeof val==='number'&&typeof m.v[ds[i-1]]==='number'){
-      var df=val-m.v[ds[i-1]];var pc=(df/Math.abs(m.v[ds[i-1]])*100).toFixed(1);
-      chg=(df>0?'+':'')+df.toFixed(2)+' ('+(df>0?'+':'')+pc+'%)';
+  for(var i=0;i<dsRev.length;i++){
+    var di=dsRev[i];
+    var val=m.v[di],chg='-';
+    // Find previous date for change calc
+    var prevIdx=ds.indexOf(di)-1;
+    if(prevIdx>=0&&typeof val==='number'&&typeof m.v[ds[prevIdx]]==='number'){
+      var df=val-m.v[ds[prevIdx]];var pcc=(df/Math.abs(m.v[ds[prevIdx]])*100).toFixed(1);
+      chg=(df>0?'+':'')+df.toFixed(2)+' ('+(df>0?'+':'')+pcc+'%)';
     }
-    var st=status({v:{[ds[i]]:val},r:m.r,attia:m.attia});
-    var prov=getProvider(m,ds[i]);
-    var pc=provColor(prov);
-    tb+='<tr><td>'+fmtD(ds[i])+'</td><td><strong>'+val+'</strong> '+m.u+'</td>';
-    tb+='<td><span class="prov-badge" style="background:'+pc+'">'+prov+'</span></td>';
+    var st=status({v:{[di]:val},r:m.r,attia:m.attia});
+    var prov=getProvider(m,di);
+    var pvc=provColor(prov);
+    tb+='<tr><td>'+fmtD(di)+'</td><td><strong>'+val+'</strong> '+m.u+'</td>';
+    tb+='<td><span class="prov-badge" style="background:'+pvc+'">'+prov+'</span></td>';
     tb+='<td>'+chg+'</td><td><span class="dot '+st+'"></span>'+statusLabel(st)+'</td></tr>';
   }
   tb+='</tbody>';
@@ -420,9 +453,17 @@ function openM(cn,nm){
           bodyColor:'#e4e6eb',
           borderColor:'#2a2e3d',
           borderWidth:1,
-          padding:10,
+          padding:12,
+          displayColors:false,
           callbacks:{
-            label:function(ctx){return ctx.parsed.y+' '+m.u;}
+            title:function(ctx){return ctx[0].label;},
+            label:function(ctx){return ctx.parsed.y+' '+m.u;},
+            afterLabel:function(ctx){
+              var d=ds[ctx.dataIndex];
+              var prov=getProvider(m,d);
+              var st=status({v:{[d]:m.v[d]},r:m.r,attia:m.attia});
+              return prov+' · '+statusLabel(st);
+            }
           }
         }
       },
