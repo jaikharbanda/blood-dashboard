@@ -78,6 +78,20 @@ svg.spark circle{fill:#6366f1}
 .btn-p{background:var(--accent);color:#fff;margin-top:10px}.btn-s{background:var(--border);color:var(--text);margin-top:10px;margin-left:6px}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:10px 18px;border-radius:8px;font-size:.82rem;z-index:300;display:none;font-weight:600}
 .toast.show{display:block}
+.imp-tabs{display:flex;gap:4px;margin-bottom:14px}
+.imp-tb{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:.78rem;cursor:pointer;font-weight:600}
+.imp-tb:hover{color:var(--text)}.imp-tb.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.imp-panel{display:none}.imp-panel.active{display:block}
+.raw-text{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:.72rem;max-height:200px;overflow-y:auto;white-space:pre-wrap;color:var(--muted);font-family:monospace}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;margin:8px 0;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s;width:0}
+#review-table th{color:var(--muted);font-weight:600;padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
+#review-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+#review-table .rv-input{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:4px 6px;color:var(--text);font-size:.78rem;width:100%}
+#review-table tr.low-conf{opacity:0.5}
+#review-table tr.low-conf:hover{opacity:0.8}
+.conf-dot{display:inline-block;width:8px;height:8px;border-radius:50%}
+.conf-dot.high{background:var(--green)}.conf-dot.medium{background:var(--yellow)}.conf-dot.low{background:var(--red)}
 @media(max-width:768px){
   .mc{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:6px 10px}
   .mc-h{grid-column:1;grid-row:1}.mc-v{grid-column:2;grid-row:1;align-items:flex-end}
@@ -103,6 +117,13 @@ svg.spark circle{fill:#6366f1}
 <details class="editor">
 <summary>Add New Blood Test Results</summary>
 <div class="editor-body">
+<div class="imp-tabs">
+<button class="imp-tb active" onclick="switchImpTab('manual',this)">Manual Entry</button>
+<button class="imp-tb" onclick="switchImpTab('pdf',this)">PDF Import</button>
+<button class="imp-tb" onclick="switchImpTab('photo',this)">Photo / Screenshot</button>
+</div>
+
+<div class="imp-panel active" id="tab-manual">
 <div class="info">Paste new results: <strong>Biomarker, Value, Unit</strong> (one per line). Set date first.</div>
 <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
 <label style="font-size:.82rem;color:var(--muted)">Test Date:</label>
@@ -111,9 +132,51 @@ svg.spark circle{fill:#6366f1}
 <input type="text" id="np" placeholder="e.g. Randox" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.82rem;width:120px">
 </div>
 <textarea id="nv" placeholder="Alanine Aminotransferase (ALT), 28, U/l&#10;Albumin, 45.1, g/l&#10;BMI, 24.8, kg/m²"></textarea>
-<div>
-<button class="btn btn-p" onclick="addResults()">Add Results</button>
-<button class="btn btn-s" onclick="exportJ()">Export JSON</button>
+<div><button class="btn btn-p" onclick="addResults()">Add Results</button></div>
+</div>
+
+<div class="imp-panel" id="tab-pdf">
+<div class="info">Upload a blood test PDF report. Text will be extracted and parsed automatically.</div>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+<label style="font-size:.82rem;color:var(--muted)">Test Date:</label>
+<input type="date" id="pdf-date" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.82rem">
+<label style="font-size:.82rem;color:var(--muted);margin-left:6px">Provider:</label>
+<input type="text" id="pdf-prov" placeholder="e.g. Randox" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.82rem;width:120px">
+</div>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<input type="file" id="pdf-file" accept=".pdf" style="font-size:.82rem;color:var(--muted)" onchange="handlePDFUpload(event)">
+</div>
+<div id="pdf-status" style="font-size:.78rem;color:var(--muted);margin-top:8px"></div>
+<div class="progress-bar" id="pdf-progress" style="display:none"><div class="progress-fill" id="pdf-progress-fill"></div></div>
+<div id="pdf-extracted" style="display:none;margin-top:10px">
+<div style="font-size:.82rem;font-weight:600;margin-bottom:4px">Extracted Text <button class="btn btn-s" style="margin:0;padding:3px 8px;font-size:.7rem" onclick="document.getElementById('pdf-raw').style.display=document.getElementById('pdf-raw').style.display==='none'?'block':'none'">Toggle</button></div>
+<pre id="pdf-raw" class="raw-text" style="display:none"></pre>
+</div>
+</div>
+
+<div class="imp-panel" id="tab-photo">
+<div class="info">Upload a photo or screenshot of blood test results. OCR will extract the text.</div>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+<label style="font-size:.82rem;color:var(--muted)">Test Date:</label>
+<input type="date" id="photo-date" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.82rem">
+<label style="font-size:.82rem;color:var(--muted);margin-left:6px">Provider:</label>
+<input type="text" id="photo-prov" placeholder="e.g. NHS" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.82rem;width:120px">
+</div>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<input type="file" id="photo-file" accept="image/*" capture="environment" style="font-size:.82rem;color:var(--muted)" onchange="handlePhotoUpload(event)">
+</div>
+<div id="photo-status" style="font-size:.78rem;color:var(--muted);margin-top:8px"></div>
+<div class="progress-bar" id="photo-progress" style="display:none"><div class="progress-fill" id="photo-progress-fill"></div></div>
+<div id="photo-extracted" style="display:none;margin-top:10px">
+<div style="font-size:.82rem;font-weight:600;margin-bottom:4px">Extracted Text <button class="btn btn-s" style="margin:0;padding:3px 8px;font-size:.7rem" onclick="document.getElementById('photo-raw').style.display=document.getElementById('photo-raw').style.display==='none'?'block':'none'">Toggle</button></div>
+<pre id="photo-raw" class="raw-text" style="display:none"></pre>
+</div>
+</div>
+
+<div id="review-panel" style="display:none;margin-top:14px"></div>
+
+<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+<button class="btn btn-s" style="margin:0" onclick="exportJ()">Export JSON</button>
 <button class="btn btn-s" onclick="document.getElementById('imp').click()">Import JSON</button>
 <input type="file" id="imp" accept=".json" style="display:none" onchange="importJ(event)">
 </div>
@@ -136,6 +199,7 @@ svg.spark circle{fill:#6366f1}
 <div class="toast" id="toast"></div>
 
 <script src="data.js"></script>
+<script src="import.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3/dist/chartjs-plugin-annotation.min.js"></script>
 <script>
@@ -236,7 +300,9 @@ function spark(vals){
 function render(){
   // Header meta
   var ld=lastDate();
-  document.getElementById('hdr-meta').textContent='Jai Kharbanda \u00B7 DOB: 4 Jul 1982'+(ld?' \u00B7 Last test: '+fmtD(ld):'');
+  var dobDate=new Date(D.patient.dob+'T00:00:00');
+  var dobStr=dobDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('hdr-meta').textContent=D.patient.name+' \u00B7 DOB: '+dobStr+(ld?' \u00B7 Last test: '+fmtD(ld):'');
 
   var q=document.getElementById('si').value.toLowerCase();
   var tot=0,opt=0,nrm=0,att=0;
@@ -508,6 +574,24 @@ function addResults(){
 function showToast(msg){
   var ts=document.getElementById('toast');ts.textContent=msg;ts.classList.add('show');
   setTimeout(function(){ts.classList.remove('show');},3000);
+}
+
+function switchImpTab(tab,btn){
+  var panels=document.querySelectorAll('.imp-panel');
+  var btns=document.querySelectorAll('.imp-tb');
+  for(var i=0;i<panels.length;i++)panels[i].classList.remove('active');
+  for(var i=0;i<btns.length;i++)btns[i].classList.remove('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+function cancelReview(){
+  document.getElementById('review-panel').style.display='none';
+}
+
+function toggleAllReview(checked){
+  var cbs=document.querySelectorAll('#review-body input[type="checkbox"]');
+  for(var i=0;i<cbs.length;i++)cbs[i].checked=checked;
 }
 
 function exportJ(){

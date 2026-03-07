@@ -1,3 +1,5 @@
 scripts/
 verify.js
 .DS_Store
+my_data.json
+blood_test_data.json
