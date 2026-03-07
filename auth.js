@@ -30,10 +30,12 @@ function initSupabase() {
   sb.auth.onAuthStateChange(function(event, session) {
     if (event === 'SIGNED_IN' && session) {
       currentUser = session.user;
+      hideLanding();
       updateAuthUI();
       loadUserData();
     } else if (event === 'SIGNED_OUT') {
       currentUser = null;
+      showLanding();
       updateAuthUI();
       // Reset to demo data
       D = JSON.parse(JSON.stringify(DEMO_DATA));
@@ -46,9 +48,11 @@ function initSupabase() {
     var session = result.data.session;
     if (session) {
       currentUser = session.user;
+      hideLanding();
       updateAuthUI();
       loadUserData();
     } else {
+      showLanding();
       updateAuthUI();
     }
   });
@@ -254,7 +258,21 @@ window.addEventListener('beforeunload', function() {
   }
 });
 
-// ── 10. UI Helpers ───────────────────────────────────────────────
+// ── 10. Landing Overlay ──────────────────────────────────────────
+function showLanding() {
+  var el = document.getElementById('landing');
+  if (el) { el.classList.remove('hidden'); el.style.display = 'flex'; }
+}
+
+function hideLanding() {
+  var el = document.getElementById('landing');
+  if (el) {
+    el.classList.add('hidden');
+    setTimeout(function() { el.style.display = 'none'; }, 400);
+  }
+}
+
+// ── 11. UI Helpers ───────────────────────────────────────────────
 function updateAuthUI() {
   var loginBtn = document.getElementById('auth-login-btn');
   var userInfo = document.getElementById('auth-user-info');

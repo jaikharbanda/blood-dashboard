@@ -92,6 +92,18 @@ svg.spark circle{fill:#6366f1}
 #review-table tr.low-conf:hover{opacity:0.8}
 .conf-dot{display:inline-block;width:8px;height:8px;border-radius:50%}
 .conf-dot.high{background:var(--green)}.conf-dot.medium{background:var(--yellow)}.conf-dot.low{background:var(--red)}
+.landing{position:fixed;inset:0;z-index:400;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .4s}
+.landing.hidden{opacity:0;pointer-events:none}
+.landing-card{text-align:center;max-width:420px;padding:40px 32px}
+.landing-card h1{font-size:1.8rem;font-weight:700;margin-bottom:4px}.landing-card h1 b{color:#818cf8}
+.landing-card .sub{color:var(--muted);font-size:.92rem;margin-bottom:32px;line-height:1.6}
+.landing-card .features{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;text-align:left}
+.landing-card .feat{display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--text)}
+.landing-card .feat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.landing-card .l-btn{width:100%;padding:12px;border-radius:10px;font-size:.92rem;font-weight:600;cursor:pointer;border:none;margin-bottom:8px}
+.landing-card .l-btn-p{background:var(--accent);color:#fff}
+.landing-card .l-btn-s{background:var(--border);color:var(--text)}
+.landing-card .l-btn:hover{opacity:.9}
 @media(max-width:768px){
   .mc{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:6px 10px}
   .mc-h{grid-column:1;grid-row:1}.mc-v{grid-column:2;grid-row:1;align-items:flex-end}
@@ -103,6 +115,19 @@ svg.spark circle{fill:#6366f1}
 </style>
 </head>
 <body>
+<div class="landing" id="landing">
+<div class="landing-card">
+<h1>Blood Test <b>Dashboard</b></h1>
+<p class="sub">Track your blood test results over time. See trends, compare to optimal ranges, and import results from PDFs or photos.</p>
+<div class="features">
+<div class="feat"><div class="feat-icon" style="background:rgba(34,197,94,.15);color:#4ade80">&#x2713;</div>Track 100+ biomarkers across multiple providers</div>
+<div class="feat"><div class="feat-icon" style="background:rgba(99,102,241,.15);color:#818cf8">&#x2197;</div>Charts, trends, and Peter Attia optimal ranges</div>
+<div class="feat"><div class="feat-icon" style="background:rgba(234,179,8,.15);color:#facc15">&#x1F4C4;</div>Import results from PDF, photo, or manual entry</div>
+</div>
+<button class="l-btn l-btn-p" onclick="openAuthModal()">Sign In</button>
+<button class="l-btn l-btn-s" onclick="openAuthModal()">Create Account</button>
+</div>
+</div>
 <div class="hdr"><div class="hdr-in">
 <div><h1>Blood Test <b>Dashboard</b></h1><div class="hdr-meta" id="hdr-meta"></div></div>
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
