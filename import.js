@@ -1126,6 +1126,7 @@ function importReviewed() {
   // Refresh the dashboard
   if (typeof render === 'function') render();
   if (typeof showToast === 'function') showToast('Imported ' + added + ' result' + (added > 1 ? 's' : '') + ' for ' + fmtD(d));
+  if (typeof scheduleSave === 'function') scheduleSave();
 
   // Clear the review panel
   var panel = document.getElementById('review-panel');

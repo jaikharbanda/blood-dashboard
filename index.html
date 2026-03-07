@@ -105,7 +105,15 @@ svg.spark circle{fill:#6366f1}
 <body>
 <div class="hdr"><div class="hdr-in">
 <div><h1>Blood Test <b>Dashboard</b></h1><div class="hdr-meta" id="hdr-meta"></div></div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<span id="save-indicator" style="font-size:.72rem;display:none"></span>
 <input type="text" class="search" placeholder="Search markers..." id="si" oninput="render()">
+<button id="auth-login-btn" onclick="openAuthModal()" style="background:var(--accent);color:#fff;padding:6px 14px;font-size:.78rem;border-radius:8px;border:1px solid var(--accent);cursor:pointer;font-weight:600;white-space:nowrap">Sign In</button>
+<div id="auth-user-info" style="display:none;align-items:center;gap:8px">
+<span id="auth-user-email" style="font-size:.78rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+<button onclick="authSignOut()" style="background:var(--border);color:var(--text);padding:5px 12px;font-size:.75rem;border-radius:6px;border:1px solid var(--border);cursor:pointer">Sign Out</button>
+</div>
+</div>
 </div></div>
 
 <div class="wrap">
@@ -196,9 +204,28 @@ svg.spark circle{fill:#6366f1}
 <div class="ref" id="mr"></div>
 </div>
 </div>
+<div class="overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
+<div class="modal" style="max-width:400px" onclick="event.stopPropagation()">
+<button class="modal-x" onclick="closeAuthModal()">&times;</button>
+<h2 style="text-align:center;margin-bottom:4px">Welcome</h2>
+<div style="text-align:center;font-size:.82rem;color:var(--muted);margin-bottom:20px">Sign in to save and sync your blood test data</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<input type="email" id="auth-email" placeholder="Email address" autocomplete="email" style="padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.88rem;outline:none" onkeydown="if(event.key==='Enter')document.getElementById('auth-password').focus()">
+<input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" style="padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.88rem;outline:none" onkeydown="if(event.key==='Enter')authSignIn()">
+<div id="auth-error" style="font-size:.78rem;color:var(--red);min-height:18px"></div>
+<button class="auth-btn btn btn-p" onclick="authSignIn()" style="width:100%;padding:10px;font-size:.88rem">Sign In</button>
+<button class="auth-btn btn btn-s" onclick="authSignUp()" style="width:100%;padding:10px;font-size:.88rem;margin:0">Create Account</button>
+<div style="text-align:center;margin-top:4px">
+<a href="#" onclick="authResetPassword();return false" style="font-size:.75rem;color:var(--accent);text-decoration:none">Forgot password?</a>
+</div>
+</div>
+</div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <script src="import.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3/dist/chartjs-plugin-annotation.min.js"></script>
@@ -569,6 +596,7 @@ function addResults(){
   document.getElementById('nv').value='';
   showToast('Added '+added+' results for '+fmtD(d));
   render();
+  if(typeof scheduleSave==='function')scheduleSave();
 }
 
 function showToast(msg){
@@ -613,13 +641,15 @@ function importJ(e){
         if(d.providerColors)D.providerColors=d.providerColors;
         render();
         showToast('Imported successfully');
+        if(typeof scheduleSave==='function')scheduleSave();
       }else{alert('Invalid format');}
     }catch(err){alert('Error: '+err.message);}
   };r.readAsText(f);
 }
 
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();if(typeof closeAuthModal==='function')closeAuthModal();}});
 
+if(typeof initSupabase==='function')initSupabase();
 render();
 </script>
 </body>
