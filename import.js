@@ -1351,3 +1351,44 @@ function ensureMarkerInD(canonical, unit) {
 
 // Build registry immediately (D has full demo data at this point)
 buildMarkerRegistry(D);
+
+// ────────────────────────────────────────────────────────────────
+// 13. Repair Categories — moves markers from "Other" to correct
+//     category using the registry (fixes previously broken imports)
+// ────────────────────────────────────────────────────────────────
+
+function repairCategories() {
+  if (!D.categories || !D.categories['Other']) return 0;
+  var moved = 0;
+  var others = D.categories['Other'];
+  var toRemove = [];
+
+  for (var mk in others) {
+    var reg = markerRegistry[mk];
+    if (reg && reg.category !== 'Other') {
+      var c = reg.category;
+      if (!D.categories[c]) D.categories[c] = {};
+      // Move marker with its values, but fix unit/range from registry
+      D.categories[c][mk] = {
+        u: reg.unit,
+        r: reg.range,
+        v: others[mk].v || {}
+      };
+      if (reg.attia) D.categories[c][mk].attia = reg.attia;
+      toRemove.push(mk);
+      moved++;
+    }
+  }
+
+  // Remove moved markers from Other
+  for (var i = 0; i < toRemove.length; i++) {
+    delete D.categories['Other'][toRemove[i]];
+  }
+
+  // Remove Other if empty
+  if (Object.keys(D.categories['Other']).length === 0) {
+    delete D.categories['Other'];
+  }
+
+  return moved;
+}

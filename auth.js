@@ -184,6 +184,14 @@ function loadUserData() {
         var loaded = result.data.data;
         if (loaded.categories && loaded.patient) {
           D = loaded;
+          // Repair markers stuck in "Other" from prior broken imports
+          if (typeof repairCategories === 'function') {
+            var fixed = repairCategories();
+            if (fixed > 0) {
+              console.log('Repaired ' + fixed + ' markers from Other → correct categories');
+              scheduleSave(); // persist the fix
+            }
+          }
           if (typeof render === 'function') render();
           if (typeof showToast === 'function') showToast('Data loaded');
           // Auto-show wizard if dashboard is empty
