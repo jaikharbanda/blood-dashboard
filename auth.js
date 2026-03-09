@@ -186,6 +186,10 @@ function loadUserData() {
           D = loaded;
           if (typeof render === 'function') render();
           if (typeof showToast === 'function') showToast('Data loaded');
+          // Auto-show wizard if dashboard is empty
+          if (typeof wizardCheckEmpty === 'function' && wizardCheckEmpty()) {
+            if (typeof showWizard === 'function') setTimeout(showWizard, 300);
+          }
         }
       }
     });
@@ -214,6 +218,8 @@ function offerDataMigration() {
     D = createEmptyData();
     if (typeof render === 'function') render();
     saveUserData();
+    // Auto-show import wizard for new users
+    if (typeof showWizard === 'function') setTimeout(showWizard, 300);
   }
 }
 

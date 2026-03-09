@@ -92,6 +92,22 @@ svg.spark circle{fill:#6366f1}
 #review-table tr.low-conf:hover{opacity:0.8}
 .conf-dot{display:inline-block;width:8px;height:8px;border-radius:50%}
 .conf-dot.high{background:var(--green)}.conf-dot.medium{background:var(--yellow)}.conf-dot.low{background:var(--red)}
+.wz-overlay{position:fixed;inset:0;z-index:450;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;overflow-y:auto;padding:20px}
+.wz-overlay.open{display:flex}
+.wz-card{background:var(--card);border-radius:16px;padding:28px 24px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.wz-steps{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px}
+.wz-dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:all .3s}
+.wz-dot.active{background:var(--accent);transform:scale(1.3)}
+.wz-dot.done{background:var(--green)}
+.wz-dropzone{border:2px dashed var(--border);border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s}
+.wz-dropzone:hover,.wz-dropzone.dragover{border-color:var(--accent);background:rgba(99,102,241,.06)}
+.wz-file-list{margin-top:16px;display:flex;flex-direction:column;gap:6px}
+.wz-file-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:.82rem}
+.wz-file-section{background:var(--bg);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.wz-file-header{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer}
+.wz-file-header:hover{background:rgba(255,255,255,.03)}
+.wz-file-detail{padding:0 12px 12px}
+.wz-chevron{transition:transform .2s}
 .landing{position:fixed;inset:0;z-index:400;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .4s}
 .landing.hidden{opacity:0;pointer-events:none}
 .landing-card{text-align:center;max-width:420px;padding:40px 32px}
@@ -209,6 +225,7 @@ svg.spark circle{fill:#6366f1}
 <div id="review-panel" style="display:none;margin-top:14px"></div>
 
 <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+<button class="btn btn-p" style="margin:0" onclick="showWizard()">Batch Import Files</button>
 <button class="btn btn-s" style="margin:0" onclick="exportJ()">Export JSON</button>
 <button class="btn btn-s" onclick="document.getElementById('imp').click()">Import JSON</button>
 <input type="file" id="imp" accept=".json" style="display:none" onchange="importJ(event)">
@@ -248,10 +265,25 @@ svg.spark circle{fill:#6366f1}
 </div>
 <div class="toast" id="toast"></div>
 
+<div class="wz-overlay" id="wizard-overlay" onclick="if(event.target===this)closeWizard()">
+<div class="wz-card" onclick="event.stopPropagation()">
+<button class="modal-x" onclick="closeWizard()" style="position:absolute;top:12px;right:14px">&times;</button>
+<div class="wz-steps">
+<div class="wz-dot active" id="wz-dot-1"></div>
+<div style="width:30px;height:2px;background:var(--border)"></div>
+<div class="wz-dot" id="wz-dot-2"></div>
+<div style="width:30px;height:2px;background:var(--border)"></div>
+<div class="wz-dot" id="wz-dot-3"></div>
+</div>
+<div id="wizard-body"></div>
+</div>
+</div>
+
 <script src="data.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script src="import.js"></script>
+<script src="wizard.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3/dist/chartjs-plugin-annotation.min.js"></script>
 <script>
