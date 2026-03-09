@@ -982,7 +982,7 @@ function parseRandoxTracking(rawText) {
     if (/^[A-Za-z]/.test(trimmed) &&
         !/^\d{1,2}-[A-Za-z]{3}-\d{4}/.test(trimmed) &&
         trimmed.length > 1 &&
-        !/^(Underweight|Optimal|Overweight|Obese|Low|High|Normal|Moderate|Very|risk|Indeterminate|Negative|Positive|Trace)/i.test(trimmed) &&
+        !/^(Underweight|Optimal|Overweight|Obese|Normal|Moderate|Very\s|risk|Indeterminate|Negative|Positive|Trace|Desirable|Satisfactory|Stage\s|Pre-diabetic|Average\s|Small\s*\+|Large\s*\+)/i.test(trimmed) &&
         !/Rev\s*\(/.test(trimmed)) {
       // Accept as biomarker if: matches known alias, OR is a capitalized multi-word name
       if (matchBiomarker(trimmed) || (trimmed.length > 3 && /^[A-Z]/.test(trimmed))) {
@@ -1408,11 +1408,13 @@ function handlePDFUpload(event) {
 
     // Try Randox Biomarker Tracking format first
     var randoxData = (typeof parseRandoxTracking === 'function') ? parseRandoxTracking(text) : null;
+    console.log('[Randox] parseRandoxTracking returned:', randoxData ? Object.keys(randoxData).length + ' dates' : 'null');
     if (randoxData) {
       var dates = Object.keys(randoxData).sort();
       var totalAdded = 0;
       for (var d = 0; d < dates.length; d++) {
         var dt = dates[d];
+        console.log('[Randox] Date ' + dt + ': ' + randoxData[dt].length + ' results');
         if (!D.dateSources) D.dateSources = {};
         if (!D.providerColors) D.providerColors = {};
         if (!D.dateSources[dt]) D.dateSources[dt] = 'Randox';
@@ -1429,6 +1431,7 @@ function handlePDFUpload(event) {
           totalAdded++;
         }
       }
+      console.log('[Randox] Total imported: ' + totalAdded + ' results across ' + dates.length + ' dates');
       statusEl.textContent = 'Imported ' + totalAdded + ' results across ' + dates.length + ' dates.';
       progressEl.style.display = 'none';
       if (typeof render === 'function') render();

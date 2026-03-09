@@ -289,10 +289,14 @@ function wizardProcessNext(idx) {
   }).then(function(text) {
     // Try Randox Biomarker Tracking format first (multi-date)
     var randoxData = (typeof parseRandoxTracking === 'function') ? parseRandoxTracking(text) : null;
+    console.log('[Wizard Randox] parseRandoxTracking returned:', randoxData ? Object.keys(randoxData).length + ' dates' : 'null');
 
     if (randoxData) {
       // Multi-date PDF: expand into one entry per date
       var dates = Object.keys(randoxData).sort();
+      for (var dd = 0; dd < dates.length; dd++) {
+        console.log('[Wizard Randox] Date ' + dates[dd] + ': ' + randoxData[dates[dd]].length + ' results');
+      }
       // Update current entry with the first date
       entry.results = randoxData[dates[0]];
       entry.date = dates[0];
