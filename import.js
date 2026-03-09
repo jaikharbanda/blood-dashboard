@@ -8,6 +8,50 @@
 //    Maps lowercase lab report names → canonical D.categories key
 // ────────────────────────────────────────────────────────────────
 
+// ────────────────────────────────────────────────────────────────
+// 0. Unit Auto-Conversion Map (non-SI → SI)
+// ────────────────────────────────────────────────────────────────
+var IMPORT_UNIT_MAP = {
+  "Apolipoprotein A-I":    {"mg/dl":{to:"g/l",factor:0.01}},
+  "Apolipoprotein B":      {"mg/dl":{to:"g/l",factor:0.01}},
+  "Small LDL Cholesterol": {"mg/dl":{to:"mmol/l",factor:0.02586}},
+  "C-peptide":             {"ng/ml":{to:"pmol/l",factor:331}},
+  "Oestradiol (E2)":       {"pg/ml":{to:"pmol/l",factor:3.671}},
+  "DHT":                   {"pg/ml":{to:"nmol/l",factor:0.003443}},
+  "Total Cholesterol":     {"mg/dl":{to:"mmol/l",factor:0.02586}},
+  "LDL Cholesterol":       {"mg/dl":{to:"mmol/l",factor:0.02586}},
+  "HDL Cholesterol":       {"mg/dl":{to:"mmol/l",factor:0.02586}},
+  "Non-HDL Cholesterol":   {"mg/dl":{to:"mmol/l",factor:0.02586}},
+  "Triglycerides":         {"mg/dl":{to:"mmol/l",factor:0.01129}},
+  "Glucose":               {"mg/dl":{to:"mmol/l",factor:0.05551}},
+  "Testosterone":          {"ng/dl":{to:"nmol/l",factor:0.03467}},
+  "Free Testosterone":     {"ng/dl":{to:"nmol/l",factor:0.03467}},
+  "Vitamin D":             {"ng/ml":{to:"nmol/l",factor:2.496}},
+  "Iron":                  {"ug/dl":{to:"umol/l",factor:0.1791}},
+  "Uric Acid":             {"mg/dl":{to:"umol/l",factor:59.48}},
+  "Creatinine":            {"mg/dl":{to:"umol/l",factor:88.42}},
+  "Homocysteine":          {"umol/l":{to:"umol/l",factor:1}}
+};
+
+function convertToSI(canonical, value, unit) {
+  if (!canonical || !unit || typeof value !== 'number') return {value:value, converted:false};
+  var norm = unit.toLowerCase().replace(/\s+/g,'');
+  var convMap = IMPORT_UNIT_MAP[canonical];
+  if (!convMap) return {value:value, converted:false};
+  for (var fromU in convMap) {
+    if (norm === fromU.toLowerCase().replace(/\s+/g,'')) {
+      var c = convMap[fromU];
+      return {value: parseFloat((value * c.factor).toPrecision(4)), converted:true};
+    }
+  }
+  return {value:value, converted:false};
+}
+
+// ────────────────────────────────────────────────────────────────
+// 1. Biomarker Alias Map
+//    Maps lowercase lab report names → canonical D.categories key
+// ────────────────────────────────────────────────────────────────
+
 var biomarkerAliases = {
   // ── Personal Health ──────────────────────────────────────────
   "bmi":                              "Body Mass Index (BMI)",
@@ -1340,7 +1384,8 @@ function importReviewed() {
     var unitCell = row.querySelectorAll('td')[3];
     var unit = unitCell ? unitCell.textContent.trim() : '';
     var placement = ensureMarkerInD(targetName, unit);
-    D.categories[placement.category][placement.name].v[d] = val;
+    var conv = convertToSI(placement.name, val, unit);
+    D.categories[placement.category][placement.name].v[d] = conv.value;
 
     added++;
   }

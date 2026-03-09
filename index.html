@@ -544,7 +544,9 @@ function openM(cn,nm){
   document.getElementById('mtb').innerHTML=tb;
 
   // Chart legend
-  var legHtml='<span><span class="swatch" style="background:#6366f1"></span>'+t('values_legend')+'</span>';
+  var legHtml='<span><span class="swatch" style="background:#22c55e;border:1px solid #22c55e"></span>'+t('status_optimal')+'</span>';
+  legHtml+='<span><span class="swatch" style="background:#eab308;border:1px solid #eab308"></span>'+t('status_normal')+'</span>';
+  legHtml+='<span><span class="swatch" style="background:#ef4444;border:1px solid #ef4444"></span>'+t('status_attention')+'</span>';
   legHtml+='<span><span class="swatch" style="background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.6)"></span>'+t('lab_range_legend')+'</span>';
   if(m.attia)legHtml+='<span><span class="swatch" style="background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.5)"></span>'+t('attia_optimal_legend')+'</span>';
   document.getElementById('cleg').innerHTML=legHtml;
@@ -552,11 +554,20 @@ function openM(cn,nm){
   // Chart.js
   if(detailChart){detailChart.destroy();detailChart=null;}
   var canvas=document.getElementById('dc');
-  var labels=[];var values=[];var bgColors=[];
+  var labels=[];var values=[];var bgColors=[];var ptBorderColors=[];
   for(var i=0;i<ds.length;i++){
     labels.push(fmtD(ds[i]));
-    values.push(typeof m.v[ds[i]]==='number'?m.v[ds[i]]:null);
-    bgColors.push(provColor(getProvider(m,ds[i])));
+    var ptVal=typeof m.v[ds[i]]==='number'?m.v[ds[i]]:null;
+    values.push(ptVal);
+    // Color-code by status relative to PA ideal / lab range
+    var ptColor='#6366f1';
+    if(ptVal!=null){
+      var ptM={v:{},r:m.r,attia:m.attia};ptM.v[ds[i]]=ptVal;
+      var ptSt=status(ptM);
+      ptColor=ptSt==='optimal'?'#22c55e':ptSt==='normal'?'#eab308':'#ef4444';
+    }
+    bgColors.push(ptColor);
+    ptBorderColors.push(ptColor);
   }
 
   // Parse reference range for annotation
@@ -606,8 +617,8 @@ function openM(cn,nm){
         pointRadius:5,
         pointHoverRadius:7,
         pointBackgroundColor:bgColors,
-        pointBorderColor:'#6366f1',
-        pointBorderWidth:2
+        pointBorderColor:ptBorderColors,
+        pointBorderWidth:3
       }]
     },
     options:{
@@ -903,6 +914,7 @@ function loadSharedData(){
       showToast(t('share_not_found'));return;
     }
     D=result.data.data;
+    if(typeof migrateToSI==='function')migrateToSI(D);
     render();
     // Show share banner
     var banner=document.getElementById('share-banner');

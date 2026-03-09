@@ -14,6 +14,69 @@ var saveTimer = null;      // Debounce timer for auto-save
 var isSaving = false;      // Prevents concurrent saves
 var DEMO_DATA = null;      // Snapshot of original data.js for reset
 
+// ── Unit Migration ─────────────────────────────────────────────
+var SI_UNIT_VERSION = 1;
+
+var UNIT_CONVERSIONS = {
+  "Apolipoprotein A-I":  {from:"mg/dl",to:"g/l",factor:0.01,rangeTo:"1.20-1.76 Normal"},
+  "Apolipoprotein B":    {from:"mg/dl",to:"g/l",factor:0.01,rangeTo:"<1.20 Desirable",
+                          attia:{high:0.60,label:"<0.60 g/L"}},
+  "Small LDL Cholesterol":{from:"mg/dl",to:"mmol/l",factor:0.02586,rangeTo:"<0.67 Optimal"},
+  "C-peptide":           {from:"ng/ml",to:"pmol/l",factor:331,rangeTo:"364-1457 Normal"},
+  "Oestradiol (E2)":     {from:"pg/ml",to:"pmol/l",factor:3.671,rangeTo:"40-162 Normal (male)",
+                          attia:{low:110.1,high:183.6,label:"110\u2013184 pmol/L"}},
+  "DHT":                 {from:"pg/ml",to:"nmol/l",factor:0.003443,rangeTo:"0.86-3.41 Normal (male)"}
+};
+
+var ATTIA_LABEL_UPDATES = {
+  "LDL Cholesterol":     "<1.8 mmol/L",
+  "Triglycerides":       "<1.13 mmol/L",
+  "Glucose":             "<5.0 mmol/L",
+  "HbA1c":               "<38.8 mmol/mol",
+  "Insulin":             "<41.7 pmol/L",
+  "Uric Acid":           "<297 \u00b5mol/L",
+  "Testosterone":        "13.9\u201341.6 nmol/L",
+  "Free Testosterone":   "0.139\u20130.832 nmol/L",
+  "Vitamin D":           "100\u2013150 nmol/L",
+  "Magnesium":           ">0.82 mmol/L",
+  "Fibrinogen":          "<3.55 g/L"
+};
+
+function migrateToSI(data) {
+  if (!data || !data.categories) return data;
+  if (data.unitVersion >= SI_UNIT_VERSION) return data;
+
+  var changed = false;
+  for (var cat in data.categories) {
+    for (var mk in data.categories[cat]) {
+      var m = data.categories[cat][mk];
+      var conv = UNIT_CONVERSIONS[mk];
+      if (conv && m.u === conv.from) {
+        for (var d in m.v) {
+          if (typeof m.v[d] === 'number') {
+            m.v[d] = parseFloat((m.v[d] * conv.factor).toPrecision(4));
+          }
+        }
+        m.u = conv.to;
+        m.r = conv.rangeTo;
+        if (conv.attia && m.attia) {
+          if (conv.attia.high != null) m.attia.high = conv.attia.high;
+          if (conv.attia.low != null) m.attia.low = conv.attia.low;
+          if (conv.attia.label) m.attia.label = conv.attia.label;
+        }
+        changed = true;
+      }
+      var lbl = ATTIA_LABEL_UPDATES[mk];
+      if (lbl && m.attia && m.attia.label !== lbl) {
+        m.attia.label = lbl;
+        changed = true;
+      }
+    }
+  }
+  data.unitVersion = SI_UNIT_VERSION;
+  return changed ? data : data;
+}
+
 // ── 1. Initialize ────────────────────────────────────────────────
 function initSupabase() {
   // Capture demo data before anything modifies it
@@ -199,6 +262,10 @@ function loadUserData() {
         var loaded = result.data.data;
         if (loaded.categories && loaded.patient) {
           D = loaded;
+          // Migrate old US-unit values to SI
+          var preVersion = D.unitVersion || 0;
+          migrateToSI(D);
+          if (D.unitVersion > preVersion) scheduleSave();
           // Repair markers stuck in "Other" from prior broken imports
           if (typeof repairCategories === 'function') {
             var fixed = repairCategories();
@@ -268,6 +335,7 @@ function loadFromLocalStorage() {
       var parsed = JSON.parse(cached);
       if (parsed.categories && parsed.patient) {
         D = parsed;
+        migrateToSI(D);
         if (typeof render === 'function') render();
       }
     }

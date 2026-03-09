@@ -488,7 +488,12 @@ function wizardImportAll() {
 
       // Place marker in correct category (using registry for empty dashboards)
       var placement = ensureMarkerInD(canonical, res.unit || '');
-      D.categories[placement.category][placement.name].v[d] = res.value;
+      var wVal = res.value;
+      if (typeof convertToSI === 'function' && res.unit) {
+        var wConv = convertToSI(placement.name, wVal, res.unit);
+        wVal = wConv.value;
+      }
+      D.categories[placement.category][placement.name].v[d] = wVal;
 
       totalAdded++;
     }
