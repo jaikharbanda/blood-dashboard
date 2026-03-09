@@ -444,6 +444,126 @@ function updateStaticI18n() {
   if (landingBtns[1]) landingBtns[1].textContent = t('create_account');
 }
 
+// ── Italian Name Translations ────────────────────────────────────
+// Display translated marker + category names when LANG==='it'.
+// Internal keys always remain English.
+
+var IT_NAMES = {
+  // Personal Health
+  "Body Mass Index (BMI)":"Indice di Massa Corporea (BMI)",
+  "Weight":"Peso","Height":"Altezza",
+  "Waist Circumference":"Circonferenza Vita",
+  "Hip Circumference":"Circonferenza Fianchi",
+  "Waist / Hip Ratio":"Rapporto Vita/Fianchi",
+  "Pulse":"Frequenza Cardiaca",
+  "Systolic Blood Pressure":"Pressione Sistolica",
+  "Diastolic Blood Pressure":"Pressione Diastolica",
+  "Oxygen Saturation":"Saturazione O\u2082",
+  // Cardiovascular
+  "Total Cholesterol":"Colesterolo Totale",
+  "LDL Cholesterol":"Colesterolo LDL",
+  "HDL Cholesterol":"Colesterolo HDL",
+  "Non-HDL Cholesterol":"Colesterolo Non-HDL",
+  "Small LDL Cholesterol":"Colesterolo LDL Piccolo",
+  "Triglycerides":"Trigliceridi",
+  "Total Cholesterol / HDL Ratio":"Rapporto Colesterolo Totale/HDL",
+  "Apolipoprotein A-I":"Apolipoproteina A-I",
+  "Apolipoprotein B":"Apolipoproteina B",
+  "Apolipoprotein B / A-I Ratio":"Rapporto Apolipoproteina B/A-I",
+  "Lipoprotein (a)":"Lipoproteina (a)",
+  "Cardiovascular Risk Score":"Punteggio Rischio Cardiovascolare",
+  "Homocysteine":"Omocisteina",
+  // Metabolic / Diabetes
+  "Glucose":"Glucosio",
+  "HbA1c":"Emoglobina Glicata (HbA1c)",
+  "Insulin":"Insulina","C-peptide":"Peptide C",
+  // Liver
+  "ALT (SGPT)":"ALT (GPT)","AST (SGOT)":"AST (GOT)",
+  "Alkaline Phosphatase (ALP)":"Fosfatasi Alcalina (ALP)",
+  "Total Bilirubin":"Bilirubina Totale",
+  "Albumin":"Albumina","Total Protein":"Proteine Totali",
+  "Globulin":"Globulina","Lipase":"Lipasi",
+  "Pancreatic Amylase":"Amilasi Pancreatica",
+  // Kidney
+  "Creatinine":"Creatinina","Urea":"Urea",
+  "Uric Acid":"Acido Urico","Cystatin C":"Cistatina C",
+  "Bicarbonate":"Bicarbonato",
+  // Thyroid
+  "Free T4 (FT4)":"T4 Libero (FT4)",
+  "Free T3 (FT3)":"T3 Libero (FT3)",
+  // Hormones
+  "Testosterone":"Testosterone",
+  "Free Testosterone":"Testosterone Libero",
+  "Prolactin":"Prolattina","Cortisol":"Cortisolo",
+  "Oestradiol (E2)":"Estradiolo (E2)",
+  // Full Blood Count
+  "Haemoglobin":"Emoglobina","Haematocrit":"Ematocrito",
+  "Red Blood Cell Count":"Conta Globuli Rossi",
+  "White Blood Cell Count":"Conta Globuli Bianchi",
+  "Neutrophil Count":"Conta Neutrofili",
+  "Lymphocyte Count":"Conta Linfociti",
+  "Monocyte Count":"Conta Monociti",
+  "Eosinophil Count":"Conta Eosinofili",
+  "Basophil Count":"Conta Basofili",
+  "Platelet Count":"Conta Piastrine",
+  "ESR":"VES",
+  // Iron & Minerals
+  "Iron":"Ferro","Ferritin":"Ferritina",
+  "Transferrin":"Transferrina",
+  "Transferrin Saturation":"Saturazione Transferrina",
+  "Calcium (adjusted)":"Calcio (corretto)",
+  "Magnesium":"Magnesio","Phosphate":"Fosfato",
+  "Potassium":"Potassio","Sodium":"Sodio",
+  "Chloride":"Cloruro","Zinc":"Zinco","Copper":"Rame",
+  // Vitamins
+  "Vitamin D":"Vitamina D","Vitamin B12":"Vitamina B12",
+  "Folic Acid":"Acido Folico",
+  "Vitamin B1":"Vitamina B1","Vitamin B2":"Vitamina B2",
+  "Vitamin B6":"Vitamina B6",
+  // Inflammation
+  "CRP / hsCRP":"PCR / PCR ad alta sensibilit\u00e0",
+  "Creatine Kinase":"Creatina Chinasi",
+  "Total Antioxidant Status":"Stato Antiossidante Totale",
+  // Bone & Prostate
+  "Total PSA":"PSA Totale",
+  // Coagulation
+  "Fibrinogen":"Fibrinogeno",
+  "Prothrombin Time (PT)":"Tempo di Protrombina (PT)",
+  // Fatty Acids
+  "AA/DHA Ratio":"Rapporto AA/DHA",
+  "AA/EPA Ratio":"Rapporto AA/EPA",
+  // Other
+  "Leptin":"Leptina","Resistin":"Resistina"
+};
+
+var IT_CATS = {
+  "Personal Health":"Salute Personale",
+  "Cardiovascular Health":"Salute Cardiovascolare",
+  "Metabolic / Diabetes":"Metabolismo / Diabete",
+  "Liver Health":"Salute Epatica",
+  "Kidney Health":"Salute Renale",
+  "Thyroid":"Tiroide",
+  "Hormones":"Ormoni",
+  "Full Blood Count":"Emocromo Completo",
+  "Iron & Minerals":"Ferro e Minerali",
+  "Vitamins":"Vitamine",
+  "Inflammation & Immunity":"Infiammazione e Immunit\u00e0",
+  "Bone & Prostate":"Osso e Prostata",
+  "Coagulation":"Coagulazione",
+  "Fatty Acids":"Acidi Grassi",
+  "Other":"Altro"
+};
+
+function dName(name) {
+  if (LANG !== 'it') return name;
+  return IT_NAMES[name] || name;
+}
+
+function dCat(cat) {
+  if (LANG !== 'it') return cat;
+  return IT_CATS[cat] || cat;
+}
+
 // ── Italian Display Unit Conversion ──────────────────────────────
 // Internal storage is SI (UK). When LANG==='it', convert for display.
 

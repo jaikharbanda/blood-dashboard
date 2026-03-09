@@ -444,7 +444,7 @@ function render(){
   // Tabs
   var cats=['All'];for(var c in D.categories)cats.push(c);
   var th='';for(var i=0;i<cats.length;i++){
-    th+='<div class="tb'+(cats[i]===cat?' a':'')+'" data-c="'+i+'">'+(cats[i]==='All'?t('all'):cats[i])+'</div>';
+    th+='<div class="tb'+(cats[i]===cat?' a':'')+'" data-c="'+i+'">'+(cats[i]==='All'?t('all'):dCat(cats[i]))+'</div>';
   }
   var te=document.getElementById('tabs');te.innerHTML=th;
   te.querySelectorAll('.tb').forEach(function(el,i){
@@ -456,7 +456,7 @@ function render(){
   for(var cn in D.categories){
     if(cat!=='All'&&cat!==cn)continue;
     for(var nm in D.categories[cn]){
-      if(q&&nm.toLowerCase().indexOf(q)<0&&cn.toLowerCase().indexOf(q)<0)continue;
+      if(q&&nm.toLowerCase().indexOf(q)<0&&cn.toLowerCase().indexOf(q)<0&&dName(nm).toLowerCase().indexOf(q)<0&&dCat(cn).toLowerCase().indexOf(q)<0)continue;
       var m=D.categories[cn][nm];
       var s=status(m);
       if(statusFilter&&s!==statusFilter)continue;
@@ -470,7 +470,7 @@ function render(){
       var hist='';for(var i=0;i<Math.min(prev.length,3);i++)hist+='<span>'+fmtD(prev[i])+': '+dVal(nm,m.v[prev[i]])+'</span>';
       var sv=spark(m.v);
       h+='<div class="mc" data-cat="'+cn.replace(/"/g,'&quot;')+'" data-nm="'+nm.replace(/"/g,'&quot;')+'">';
-      h+='<div class="mc-h"><div class="mc-nm"><span class="dot '+s+'"></span>'+nm+'</div><div class="mc-u">'+dUnit(nm,m.u)+'</div></div>';
+      h+='<div class="mc-h"><div class="mc-nm"><span class="dot '+s+'"></span>'+dName(nm)+'</div><div class="mc-u">'+dUnit(nm,m.u)+'</div></div>';
       h+='<div class="mc-v"><div class="mc-cur">'+dVal(nm,last)+'</div>';
       h+=(tr.p>0?'<div class="mc-tr '+tc+'">'+arrow+' '+tr.p+'%</div>':'<div class="mc-tr stable">&#8594; '+t('stable')+'</div>');
       h+='</div>'+sv+'<div class="mc-hs">'+hist+'</div></div>';
@@ -493,8 +493,8 @@ function closeModal(){
 function openM(cn,nm){
   var m=D.categories[cn]&&D.categories[cn][nm];
   if(!m)return;
-  document.getElementById('mt').textContent=nm;
-  document.getElementById('mu').textContent=dUnit(nm,m.u)+' \u00B7 '+cn;
+  document.getElementById('mt').textContent=dName(nm);
+  document.getElementById('mu').textContent=dUnit(nm,m.u)+' \u00B7 '+dCat(cn);
 
   // Status info box
   var s=status(m);
@@ -828,10 +828,10 @@ function buildPDF(dates){
         if(m.v[ld]==null&&m.v[ld]===undefined)continue;
         var val=m.v[ld];if(val==null)continue;
         var st=status({v:{[ld]:val},r:m.r,attia:m.attia});
-        rows.push([nm,dVal(nm,val),dUnit(nm,m.u),statusLabel(st),dRange(nm,m.r)]);
+        rows.push([dName(nm),dVal(nm,val),dUnit(nm,m.u),statusLabel(st),dRange(nm,m.r)]);
       }else{
         var hasAny=false;
-        var row=[nm];
+        var row=[dName(nm)];
         for(var di=0;di<dates.length;di++){
           var v=m.v[dates[di]];
           row.push(v!=null?dVal(nm,v):'');
@@ -858,7 +858,7 @@ function buildPDF(dates){
     // Category title
     if(startY>doc.internal.pageSize.getHeight()-30){doc.addPage();startY=20;}
     doc.setFontSize(11);doc.setTextColor(99,102,241);
-    doc.text(cat,14,startY);startY+=2;
+    doc.text(dCat(cat),14,startY);startY+=2;
     doc.autoTable({
       head:head,body:rows,startY:startY,
       styles:{fontSize:7.5,cellPadding:2,textColor:[60,60,60]},
