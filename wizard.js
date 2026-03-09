@@ -364,23 +364,9 @@ function wizardImportAll() {
       var res = f.results[r];
       var canonical = res.matchedTo || matchBiomarker(res.name) || res.name;
 
-      // Find in existing categories
-      var found = false;
-      for (var cat in D.categories) {
-        if (D.categories[cat][canonical]) {
-          D.categories[cat][canonical].v[d] = res.value;
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        if (!D.categories['Other']) D.categories['Other'] = {};
-        if (!D.categories['Other'][canonical]) {
-          D.categories['Other'][canonical] = { u: res.unit || '', r: 'N/A', v: {} };
-        }
-        D.categories['Other'][canonical].v[d] = res.value;
-      }
+      // Place marker in correct category (using registry for empty dashboards)
+      var placement = ensureMarkerInD(canonical, res.unit || '');
+      D.categories[placement.category][placement.name].v[d] = res.value;
 
       totalAdded++;
     }

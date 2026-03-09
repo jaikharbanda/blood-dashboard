@@ -384,9 +384,12 @@ function spark(vals){
 function render(){
   // Header meta
   var ld=lastDate();
-  var dobDate=new Date(D.patient.dob+'T00:00:00');
-  var dobStr=dobDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  document.getElementById('hdr-meta').textContent=D.patient.name+' \u00B7 DOB: '+dobStr+(ld?' \u00B7 Last test: '+fmtD(ld):'');
+  var dobStr='';
+  if(D.patient.dob){var dobDate=new Date(D.patient.dob+'T00:00:00');dobStr=dobDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+  var meta=D.patient.name||'';
+  if(dobStr)meta+=(meta?' \u00B7 ':'')+' DOB: '+dobStr;
+  if(ld)meta+=(meta?' \u00B7 ':'')+'Last test: '+fmtD(ld);
+  document.getElementById('hdr-meta').textContent=meta;
 
   var q=document.getElementById('si').value.toLowerCase();
   var tot=0,opt=0,nrm=0,att=0;

@@ -1093,27 +1093,11 @@ function importReviewed() {
     var canonical = matchBiomarker(rawName);
     var targetName = canonical || rawName;
 
-    // Find in existing D.categories
-    var found = false;
-    for (var cat in D.categories) {
-      if (D.categories[cat][targetName]) {
-        D.categories[cat][targetName].v[d] = val;
-        found = true;
-        break;
-      }
-    }
-
-    // If not found, add to Other
-    if (!found) {
-      if (!D.categories['Other']) D.categories['Other'] = {};
-      if (!D.categories['Other'][targetName]) {
-        // Try to infer unit from the review table display
-        var unitCell = row.querySelectorAll('td')[3];
-        var unit = unitCell ? unitCell.textContent.trim() : '';
-        D.categories['Other'][targetName] = { u: unit, r: 'N/A', v: {} };
-      }
-      D.categories['Other'][targetName].v[d] = val;
-    }
+    // Place marker in correct category (using registry for empty dashboards)
+    var unitCell = row.querySelectorAll('td')[3];
+    var unit = unitCell ? unitCell.textContent.trim() : '';
+    var placement = ensureMarkerInD(targetName, unit);
+    D.categories[placement.category][placement.name].v[d] = val;
 
     added++;
   }
@@ -1310,3 +1294,60 @@ function showProgress(elementId, percent, message) {
     }, 1500);
   }
 }
+
+
+// ────────────────────────────────────────────────────────────────
+// 12. Marker Registry — maps canonical name → category, unit, range
+//     Built once at load time from D (which has full demo data)
+// ────────────────────────────────────────────────────────────────
+
+var markerRegistry = {};
+
+function buildMarkerRegistry(sourceData) {
+  markerRegistry = {};
+  var cats = sourceData && sourceData.categories ? sourceData.categories : {};
+  for (var cat in cats) {
+    for (var mk in cats[cat]) {
+      markerRegistry[mk] = {
+        category: cat,
+        unit: cats[cat][mk].u || '',
+        range: cats[cat][mk].r || 'N/A',
+        attia: cats[cat][mk].attia || null
+      };
+    }
+  }
+}
+
+// Resolve a canonical marker name to the correct category in D,
+// creating the category and marker structure if needed.
+// Returns {category, markerName} for the caller to set the value.
+function ensureMarkerInD(canonical, unit) {
+  // Already exists in D.categories?
+  for (var cat in D.categories) {
+    if (D.categories[cat][canonical]) return { category: cat, name: canonical };
+  }
+
+  // Look up in registry
+  var reg = markerRegistry[canonical];
+  if (reg) {
+    var c = reg.category;
+    if (!D.categories[c]) D.categories[c] = {};
+    D.categories[c][canonical] = {
+      u: reg.unit,
+      r: reg.range,
+      v: {}
+    };
+    if (reg.attia) D.categories[c][canonical].attia = reg.attia;
+    return { category: c, name: canonical };
+  }
+
+  // Fallback: put in Other
+  if (!D.categories['Other']) D.categories['Other'] = {};
+  if (!D.categories['Other'][canonical]) {
+    D.categories['Other'][canonical] = { u: unit || '', r: 'N/A', v: {} };
+  }
+  return { category: 'Other', name: canonical };
+}
+
+// Build registry immediately (D has full demo data at this point)
+buildMarkerRegistry(D);
