@@ -443,3 +443,103 @@ function updateStaticI18n() {
   if (landingBtns[0]) landingBtns[0].textContent = t('sign_in');
   if (landingBtns[1]) landingBtns[1].textContent = t('create_account');
 }
+
+// ── Italian Display Unit Conversion ──────────────────────────────
+// Internal storage is SI (UK). When LANG==='it', convert for display.
+
+var IT_DISPLAY = {
+  "Total Cholesterol":      {u:"mg/dl", f:38.67},
+  "LDL Cholesterol":        {u:"mg/dl", f:38.67},
+  "HDL Cholesterol":        {u:"mg/dl", f:38.67},
+  "Non-HDL Cholesterol":    {u:"mg/dl", f:38.67},
+  "Small LDL Cholesterol":  {u:"mg/dl", f:38.67},
+  "Triglycerides":          {u:"mg/dl", f:88.57},
+  "Apolipoprotein A-I":     {u:"mg/dl", f:100},
+  "Apolipoprotein B":       {u:"mg/dl", f:100},
+  "Lp(a)":                  {u:"mg/dl", f:0.4651},
+  "Glucose":                {u:"mg/dl", f:18.02},
+  "Insulin":                {u:"\u00b5U/ml", f:0.1440},
+  "C-peptide":              {u:"ng/ml", f:0.003021},
+  "Uric Acid":              {u:"mg/dl", f:0.01681},
+  "Testosterone":           {u:"ng/dl", f:28.84},
+  "Free Testosterone":      {u:"pg/ml", f:288.4},
+  "Oestradiol (E2)":        {u:"pg/ml", f:0.2724},
+  "DHT":                    {u:"pg/ml", f:290.4},
+  "DHEA-S":                 {u:"\u00b5g/dl", f:36.85},
+  "Cortisol":               {u:"\u00b5g/dl", f:0.03625},
+  "Free T4":                {u:"pg/ml", f:0.7770},
+  "Free T3":                {u:"pg/ml", f:0.6510},
+  "IGF-1":                  {u:"ng/ml", f:7.649},
+  "Vitamin D":              {u:"ng/ml", f:0.4006},
+  "Vitamin B12":            {u:"pg/ml", f:1.3554},
+  "Folate":                 {u:"ng/ml", f:0.4413},
+  "Iron":                   {u:"\u00b5g/dl", f:5.585},
+  "Magnesium":              {u:"mEq/l", f:2},
+  "hsCRP":                  {u:"mg/dl", f:0.1},
+  "Fibrinogen":             {u:"mg/dl", f:100},
+  "Haemoglobin":            {u:"g/dl", f:0.1},
+  "Creatinine":             {u:"mg/dl", f:0.01131}
+};
+
+var IT_ATTIA = {
+  "LDL Cholesterol":     "<70 mg/dL",
+  "Triglycerides":       "<100 mg/dL",
+  "Apolipoprotein B":    "<60 mg/dL",
+  "Glucose":             "<90 mg/dL",
+  "HbA1c":               "<38.8 mmol/mol",
+  "Insulin":             "<6 \u00b5U/mL",
+  "Uric Acid":           "<5.0 mg/dL",
+  "Testosterone":        "400\u20131200 ng/dL",
+  "Free Testosterone":   "40\u2013240 pg/mL",
+  "Oestradiol (E2)":     "30\u201350 pg/mL",
+  "Vitamin D":           "40\u201360 ng/mL",
+  "Magnesium":           ">1.64 mEq/L",
+  "Fibrinogen":          "<355 mg/dL"
+};
+
+function dVal(name, val) {
+  if (LANG !== 'it' || typeof val !== 'number') return val;
+  var c = IT_DISPLAY[name];
+  if (!c) return val;
+  var r = val * c.f;
+  if (Math.abs(r) >= 100) return parseFloat(r.toFixed(0));
+  if (Math.abs(r) >= 10) return parseFloat(r.toFixed(1));
+  return parseFloat(r.toPrecision(3));
+}
+
+function dUnit(name, siUnit) {
+  if (LANG !== 'it') return siUnit;
+  var c = IT_DISPLAY[name];
+  return c ? c.u : siUnit;
+}
+
+function dRange(name, rangeStr) {
+  if (LANG !== 'it' || !rangeStr) return rangeStr;
+  var c = IT_DISPLAY[name];
+  if (!c) return rangeStr;
+  return rangeStr.replace(/(\d+\.?\d*)/g, function(match) {
+    var n = parseFloat(match) * c.f;
+    if (Math.abs(n) >= 100) return parseFloat(n.toFixed(0));
+    if (Math.abs(n) >= 10) return parseFloat(n.toFixed(1));
+    return parseFloat(n.toPrecision(3));
+  });
+}
+
+function dAttia(name, attiaObj) {
+  if (!attiaObj) return null;
+  if (LANG === 'it' && IT_ATTIA[name]) return IT_ATTIA[name];
+  return attiaObj.label;
+}
+
+function dAttiaBound(name, val) {
+  if (LANG !== 'it' || val == null) return val;
+  var c = IT_DISPLAY[name];
+  return c ? val * c.f : val;
+}
+
+function toSI(name, val) {
+  if (LANG !== 'it' || typeof val !== 'number') return val;
+  var c = IT_DISPLAY[name];
+  if (!c) return val;
+  return parseFloat((val / c.f).toPrecision(4));
+}

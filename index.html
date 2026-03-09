@@ -467,11 +467,11 @@ function render(){
       var arrow=tr.d==='up'?'&#8593;':tr.d==='down'?'&#8595;':'&#8594;';
       var tc=tr.d;
       var prev=ds.slice(0,-1).reverse();
-      var hist='';for(var i=0;i<Math.min(prev.length,3);i++)hist+='<span>'+fmtD(prev[i])+': '+m.v[prev[i]]+'</span>';
+      var hist='';for(var i=0;i<Math.min(prev.length,3);i++)hist+='<span>'+fmtD(prev[i])+': '+dVal(nm,m.v[prev[i]])+'</span>';
       var sv=spark(m.v);
       h+='<div class="mc" data-cat="'+cn.replace(/"/g,'&quot;')+'" data-nm="'+nm.replace(/"/g,'&quot;')+'">';
-      h+='<div class="mc-h"><div class="mc-nm"><span class="dot '+s+'"></span>'+nm+'</div><div class="mc-u">'+m.u+'</div></div>';
-      h+='<div class="mc-v"><div class="mc-cur">'+last+'</div>';
+      h+='<div class="mc-h"><div class="mc-nm"><span class="dot '+s+'"></span>'+nm+'</div><div class="mc-u">'+dUnit(nm,m.u)+'</div></div>';
+      h+='<div class="mc-v"><div class="mc-cur">'+dVal(nm,last)+'</div>';
       h+=(tr.p>0?'<div class="mc-tr '+tc+'">'+arrow+' '+tr.p+'%</div>':'<div class="mc-tr stable">&#8594; '+t('stable')+'</div>');
       h+='</div>'+sv+'<div class="mc-hs">'+hist+'</div></div>';
     }
@@ -494,20 +494,20 @@ function openM(cn,nm){
   var m=D.categories[cn]&&D.categories[cn][nm];
   if(!m)return;
   document.getElementById('mt').textContent=nm;
-  document.getElementById('mu').textContent=m.u+' \u00B7 '+cn;
+  document.getElementById('mu').textContent=dUnit(nm,m.u)+' \u00B7 '+cn;
 
   // Status info box
   var s=status(m);
   var sds=Object.keys(m.v).sort();
   var lastVal=m.v[sds[sds.length-1]];
   var sboxHtml='<div class="status-tag '+s+'"><span class="dot '+s+'"></span>'+statusLabel(s)+'</div>';
-  sboxHtml+='<div style="display:flex;align-items:center;font-size:.95rem;font-weight:700">'+lastVal+' '+m.u+'</div>';
+  sboxHtml+='<div style="display:flex;align-items:center;font-size:.95rem;font-weight:700">'+dVal(nm,lastVal)+' '+dUnit(nm,m.u)+'</div>';
   document.getElementById('sbox').innerHTML=sboxHtml;
 
   // Range info with clear explanation
-  var rinfoHtml='<span class="ri-lab">'+t('lab_range')+':</span> '+m.r;
+  var rinfoHtml='<span class="ri-lab">'+t('lab_range')+':</span> '+dRange(nm,m.r);
   if(m.attia){
-    rinfoHtml+='<br><span class="ri-label">'+t('attia_ideal')+':</span> '+m.attia.label;
+    rinfoHtml+='<br><span class="ri-label">'+t('attia_ideal')+':</span> '+dAttia(nm,m.attia);
     if(s==='optimal')rinfoHtml+=' — <span style="color:#4ade80">✓ '+t('within_attia')+'</span>';
     else if(s==='normal')rinfoHtml+=' — <span style="color:#facc15">'+t('within_lab_outside_attia')+'</span>';
     else if(s==='attention')rinfoHtml+=' — <span style="color:#fca5a5">'+t('outside_lab')+'</span>';
@@ -515,8 +515,8 @@ function openM(cn,nm){
   document.getElementById('rinfo').innerHTML=rinfoHtml;
 
   // Reference footer
-  var refHtml='<strong>'+t('lab_reference')+':</strong> '+m.r;
-  if(m.attia)refHtml+='<br><strong>'+t('attia_reference')+':</strong> '+m.attia.label;
+  var refHtml='<strong>'+t('lab_reference')+':</strong> '+dRange(nm,m.r);
+  if(m.attia)refHtml+='<br><strong>'+t('attia_reference')+':</strong> '+dAttia(nm,m.attia);
   document.getElementById('mr').innerHTML=refHtml;
 
   var ds=Object.keys(m.v).sort();
@@ -531,12 +531,12 @@ function openM(cn,nm){
     var prevIdx=ds.indexOf(di)-1;
     if(prevIdx>=0&&typeof val==='number'&&typeof m.v[ds[prevIdx]]==='number'){
       var df=val-m.v[ds[prevIdx]];var pcc=(df/Math.abs(m.v[ds[prevIdx]])*100).toFixed(1);
-      chg=(df>0?'+':'')+df.toFixed(2)+' ('+(df>0?'+':'')+pcc+'%)';
+      chg=(df>0?'+':'')+dVal(nm,df)+' ('+(df>0?'+':'')+pcc+'%)';
     }
     var st=status({v:{[di]:val},r:m.r,attia:m.attia});
     var prov=getProvider(m,di);
     var pvc=provColor(prov);
-    tb+='<tr><td>'+fmtD(di)+'</td><td><strong>'+val+'</strong> '+m.u+'</td>';
+    tb+='<tr><td>'+fmtD(di)+'</td><td><strong>'+dVal(nm,val)+'</strong> '+dUnit(nm,m.u)+'</td>';
     tb+='<td><span class="prov-badge" style="background:'+pvc+'">'+prov+'</span></td>';
     tb+='<td>'+chg+'</td><td><span class="dot '+st+'"></span>'+statusLabel(st)+'</td></tr>';
   }
@@ -558,14 +558,15 @@ function openM(cn,nm){
   for(var i=0;i<ds.length;i++){
     labels.push(fmtD(ds[i]));
     var ptVal=typeof m.v[ds[i]]==='number'?m.v[ds[i]]:null;
-    values.push(ptVal);
-    // Color-code by status relative to PA ideal / lab range
+    // Color-code by status (computed on SI values)
     var ptColor='#6366f1';
     if(ptVal!=null){
       var ptM={v:{},r:m.r,attia:m.attia};ptM.v[ds[i]]=ptVal;
       var ptSt=status(ptM);
       ptColor=ptSt==='optimal'?'#22c55e':ptSt==='normal'?'#eab308':'#ef4444';
     }
+    // Convert value for display after status check
+    values.push(ptVal!=null?dVal(nm,ptVal):null);
     bgColors.push(ptColor);
     ptBorderColors.push(ptColor);
   }
@@ -585,8 +586,8 @@ function openM(cn,nm){
   if(rLow!=null||rHigh!=null){
     annotations.labRange={
       type:'box',
-      yMin:rLow!=null?rLow:undefined,
-      yMax:rHigh!=null?rHigh:undefined,
+      yMin:rLow!=null?dVal(nm,rLow):undefined,
+      yMax:rHigh!=null?dVal(nm,rHigh):undefined,
       backgroundColor:'rgba(34,197,94,0.08)',
       borderColor:'rgba(34,197,94,0.3)',
       borderWidth:1
@@ -595,8 +596,8 @@ function openM(cn,nm){
   if(m.attia){
     annotations.attiaRange={
       type:'box',
-      yMin:m.attia.low!=null?m.attia.low:undefined,
-      yMax:m.attia.high!=null?m.attia.high:undefined,
+      yMin:m.attia.low!=null?dAttiaBound(nm,m.attia.low):undefined,
+      yMax:m.attia.high!=null?dAttiaBound(nm,m.attia.high):undefined,
       backgroundColor:'rgba(99,102,241,0.1)',
       borderColor:'rgba(99,102,241,0.35)',
       borderWidth:1,
@@ -637,7 +638,7 @@ function openM(cn,nm){
           displayColors:false,
           callbacks:{
             title:function(ctx){return ctx[0].label;},
-            label:function(ctx){return ctx.parsed.y+' '+m.u;},
+            label:function(ctx){return ctx.parsed.y+' '+dUnit(nm,m.u);},
             afterLabel:function(ctx){
               var d=ds[ctx.dataIndex];
               var prov=getProvider(m,d);
@@ -675,9 +676,10 @@ function addResults(){
     var parts=lines[i].split(',');if(parts.length<2)continue;
     var nm=parts[0].trim(),val=parseFloat(parts[1].trim()),u=(parts[2]||'').trim();
     if(isNaN(val))continue;
+    var siVal=toSI(nm,val);
     var found=false;
-    for(var c in D.categories){if(D.categories[c][nm]){D.categories[c][nm].v[d]=val;found=true;break;}}
-    if(!found){if(!D.categories['Other'])D.categories['Other']={};D.categories['Other'][nm]={u:u,r:'N/A',v:{}}; D.categories['Other'][nm].v[d]=val;}
+    for(var c in D.categories){if(D.categories[c][nm]){D.categories[c][nm].v[d]=siVal;found=true;break;}}
+    if(!found){if(!D.categories['Other'])D.categories['Other']={};D.categories['Other'][nm]={u:u,r:'N/A',v:{}}; D.categories['Other'][nm].v[d]=siVal;}
     added++;
   }
   document.getElementById('nv').value='';
@@ -826,17 +828,17 @@ function buildPDF(dates){
         if(m.v[ld]==null&&m.v[ld]===undefined)continue;
         var val=m.v[ld];if(val==null)continue;
         var st=status({v:{[ld]:val},r:m.r,attia:m.attia});
-        rows.push([nm,val,m.u,statusLabel(st),m.r]);
+        rows.push([nm,dVal(nm,val),dUnit(nm,m.u),statusLabel(st),dRange(nm,m.r)]);
       }else{
         var hasAny=false;
         var row=[nm];
         for(var di=0;di<dates.length;di++){
           var v=m.v[dates[di]];
-          row.push(v!=null?v:'');
+          row.push(v!=null?dVal(nm,v):'');
           if(v!=null)hasAny=true;
         }
         if(!hasAny)continue;
-        row.push(m.u);
+        row.push(dUnit(nm,m.u));
         var lastV=null;for(var di2=dates.length-1;di2>=0;di2--){if(m.v[dates[di2]]!=null){lastV=m.v[dates[di2]];break;}}
         var stt=lastV!=null?status({v:{'x':lastV},r:m.r,attia:m.attia}):'unknown';
         row.push(statusLabel(stt));
