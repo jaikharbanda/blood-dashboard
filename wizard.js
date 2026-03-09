@@ -151,6 +151,91 @@ function wizardGuessDate(filename) {
   return '';
 }
 
+// Extract date from the raw parsed text of a blood test report
+function wizardExtractDateFromText(text) {
+  if (!text) return '';
+
+  var monthNames = {
+    'jan':1,'january':1,'feb':2,'february':2,'mar':3,'march':3,
+    'apr':4,'april':4,'may':5,'jun':6,'june':6,
+    'jul':7,'july':7,'aug':8,'august':8,'sep':9,'september':9,
+    'oct':10,'october':10,'nov':11,'november':11,'dec':12,'december':12
+  };
+
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function validDate(y, m, d) { return y >= 2015 && y <= 2030 && m >= 1 && m <= 12 && d >= 1 && d <= 31; }
+
+  // Look for date near keywords first (most reliable)
+  var keywords = /(?:date(?:\s+of)?(?:\s+(?:collection|visit|report|sample|test|birth|received|taken))?|collected|received|sample\s+date|report\s+date|test\s+date|specimen\s+collected|date\s+collected|visit\s+date)\s*[:\-]?\s*/gi;
+  var m, best = '';
+
+  // Search line by line for keyword + date
+  var lines = text.split(/\n/);
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+
+    // Skip DOB lines
+    if (/\b(?:d\.?o\.?b|date\s+of\s+birth|born)\b/i.test(line)) continue;
+
+    // Keyword + DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+    m = line.match(/(?:date|collect|receiv|sample|report|visit|specimen|test|taken)[^0-9]{0,20}(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{2,4})/i);
+    if (m) {
+      var d = parseInt(m[1]), mo = parseInt(m[2]), y = parseInt(m[3]);
+      if (y < 100) y += 2000;
+      if (validDate(y, mo, d)) return y + '-' + pad(mo) + '-' + pad(d);
+      // Maybe it's MM/DD/YYYY — but UK reports are usually DD/MM
+    }
+
+    // Keyword + YYYY-MM-DD
+    m = line.match(/(?:date|collect|receiv|sample|report|visit|specimen|test|taken)[^0-9]{0,20}(\d{4})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})/i);
+    if (m) {
+      var y2 = parseInt(m[1]), mo2 = parseInt(m[2]), d2 = parseInt(m[3]);
+      if (validDate(y2, mo2, d2)) return y2 + '-' + pad(mo2) + '-' + pad(d2);
+    }
+
+    // Keyword + DD Mon YYYY (e.g., "01 March 2024", "01-Mar-2024")
+    m = line.match(/(?:date|collect|receiv|sample|report|visit|specimen|test|taken)[^a-z]{0,20}(\d{1,2})\s*[\-\/\s]\s*([a-z]+)\s*[\-\/\s]\s*(\d{2,4})/i);
+    if (m) {
+      var mn = monthNames[m[2].toLowerCase()];
+      if (mn) {
+        var yr = parseInt(m[3]);
+        if (yr < 100) yr += 2000;
+        if (validDate(yr, mn, parseInt(m[1]))) return yr + '-' + pad(mn) + '-' + pad(parseInt(m[1]));
+      }
+    }
+
+    // Keyword + Mon DD, YYYY (e.g., "March 01, 2024")
+    m = line.match(/(?:date|collect|receiv|sample|report|visit|specimen|test|taken)[^a-z]{0,20}([a-z]+)\s+(\d{1,2})\s*,?\s*(\d{4})/i);
+    if (m) {
+      var mn2 = monthNames[m[1].toLowerCase()];
+      if (mn2) {
+        if (validDate(parseInt(m[3]), mn2, parseInt(m[2]))) return m[3] + '-' + pad(mn2) + '-' + pad(parseInt(m[2]));
+      }
+    }
+  }
+
+  // Fallback: look for standalone DD/MM/YYYY anywhere (not near DOB)
+  for (var j = 0; j < lines.length; j++) {
+    if (/\b(?:d\.?o\.?b|date\s+of\s+birth|born)\b/i.test(lines[j])) continue;
+    m = lines[j].match(/\b(\d{1,2})\s*[\/\-\.]\s*(\d{1,2})\s*[\/\-\.]\s*(\d{4})\b/);
+    if (m) {
+      var fd = parseInt(m[1]), fmo = parseInt(m[2]), fy = parseInt(m[3]);
+      if (validDate(fy, fmo, fd) && fy >= 2020) return fy + '-' + pad(fmo) + '-' + pad(fd);
+    }
+    // DD Mon YYYY standalone
+    m = lines[j].match(/\b(\d{1,2})\s*[\-\s]\s*([a-z]{3,9})\s*[\-\s]\s*(\d{4})\b/i);
+    if (m) {
+      var fmn = monthNames[m[2].toLowerCase()];
+      if (fmn) {
+        var fyr = parseInt(m[3]);
+        if (validDate(fyr, fmn, parseInt(m[1])) && fyr >= 2020) return fyr + '-' + pad(fmn) + '-' + pad(parseInt(m[1]));
+      }
+    }
+  }
+
+  return '';
+}
+
 function wizardSetupDrop() {
   var dz = document.getElementById('wz-dropzone');
   if (!dz) return;
@@ -204,6 +289,10 @@ function wizardProcessNext(idx) {
   }).then(function(text) {
     entry.results = parseLabText(text);
     entry.rawText = text;
+    // Auto-detect date from text if filename didn't provide one
+    if (!entry.date) {
+      entry.date = wizardExtractDateFromText(text);
+    }
     entry.status = 'done';
     wizardProcessNext(idx + 1);
   }).catch(function(err) {

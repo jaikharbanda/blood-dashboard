@@ -128,6 +128,21 @@ function authSignOut() {
   });
 }
 
+// ── 4b. Reset User Data ─────────────────────────────────────────
+function resetUserData() {
+  if (!currentUser) {
+    alert('You must be signed in to reset data.');
+    return;
+  }
+  if (!confirm('This will erase ALL your saved blood test data and let you re-import.\n\nAre you sure?')) return;
+
+  D = createEmptyData();
+  if (typeof render === 'function') render();
+  saveUserData();
+  if (typeof showToast === 'function') showToast('Data reset — ready to re-import');
+  if (typeof showWizard === 'function') setTimeout(showWizard, 500);
+}
+
 // ── 5. Save User Data ────────────────────────────────────────────
 function saveUserData() {
   if (!currentUser || !sb || isSaving) return;

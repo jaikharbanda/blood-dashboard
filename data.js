@@ -35,8 +35,7 @@ categories:{
   "Small LDL Cholesterol":{u:"mg/dl",r:"<26 Optimal",v:{"2023-09-15":20.47,"2024-03-01":24.06,"2024-10-04":20.8,"2025-07-14":19.06}},
   "Cardiovascular Risk Score":{u:"%",r:"<10 Low risk, 10-20 Moderate, >20 High risk",v:{"2024-03-01":4,"2024-10-04":2,"2025-07-14":2}},
   "Non-HDL Cholesterol":{u:"mmol/l",r:"<2.5 Optimal, 2.5-3.3 Normal, >3.3 High",v:{"2023-03-27":2.7}},
-  "Homocysteine":{u:"umol/l",r:"<15 Normal, >15 High",v:{"2022-12-13":17.1,"2023-07-10":9.1,"2023-09-15":6},attia:{high:9,label:"<9 µmol/L"}},
-  "Fibrinogen":{u:"g/l",r:"1.5-4.0 Normal",v:{"2022-12-13":3,"2023-07-14":3.57},attia:{high:3.55,label:"<355 mg/dL"}}
+  "Homocysteine":{u:"umol/l",r:"<15 Normal, >15 High",v:{"2022-12-13":17.1,"2023-07-10":9.1,"2023-09-15":6},attia:{high:9,label:"<9 µmol/L"}}
 },
 "Metabolic / Diabetes":{
   "Glucose":{u:"mmol/l",r:"<5.6 Optimal, 5.6-6.9 Impaired, >6.9 Diabetic",v:{"2022-12-13":5,"2023-07-10":5.74,"2023-09-15":5.71,"2024-03-01":3.79,"2024-10-04":4.01,"2025-07-14":5.4},attia:{high:5,label:"<90 mg/dL"}},
@@ -142,6 +141,7 @@ categories:{
   "Total PSA":{u:"ug/l",r:"<4 Normal",v:{"2023-07-10":0.3,"2024-03-01":0.28,"2024-10-04":0.37}}
 },
 "Coagulation":{
+  "Fibrinogen":{u:"g/l",r:"1.5-4.0 Normal",v:{"2022-12-13":3,"2023-07-14":3.57},attia:{high:3.55,label:"<355 mg/dL"}},
   "Prothrombin Time (PT)":{u:"seconds",r:"10-14 Normal",v:{"2022-12-13":12.8}},
   "INR":{u:"-",r:"0.8-1.2 Normal",v:{"2022-12-13":1}},
   "APTT":{u:"seconds",r:"25-35 Normal",v:{"2022-12-13":25.2}}

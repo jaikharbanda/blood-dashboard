@@ -81,6 +81,11 @@ var biomarkerAliases = {
   "apo b":                            "Apolipoprotein B",
   "apob":                             "Apolipoprotein B",
   "apo-b":                            "Apolipoprotein B",
+  "apo b100":                         "Apolipoprotein B",
+  "apo-b100":                         "Apolipoprotein B",
+  "apolipoprotein b100":              "Apolipoprotein B",
+  "apolipoprotein b (apob)":          "Apolipoprotein B",
+  "apo b (apolipoprotein b)":         "Apolipoprotein B",
   "apolipoprotein b / a-i ratio":     "Apolipoprotein B / A-I Ratio",
   "apob/apoa1":                       "Apolipoprotein B / A-I Ratio",
   "apob/apoa1 ratio":                 "Apolipoprotein B / A-I Ratio",
@@ -527,7 +532,30 @@ var biomarkerAliases = {
   "helicobacter pylori":              "H. pylori",
   "h.pylori":                         "H. pylori",
   "h. pylori antibodies":             "H. pylori",
-  "helicobacter pylori igg":          "H. pylori"
+  "helicobacter pylori igg":          "H. pylori",
+
+  // ── Additional Randox / Medichecks aliases ──────────────────
+  "active b12":                       "Vitamin B12",
+  "holotranscobalamin":               "Vitamin B12",
+  "active vitamin b12":               "Vitamin B12",
+  "vitamin d (25 oh)":                "Vitamin D",
+  "25-hydroxyvitamin d3":             "Vitamin D",
+  "vitamin d3":                       "Vitamin D",
+  "hba1c (dcct)":                     "HbA1c",
+  "hba1c (ifcc aligned)":             "HbA1c",
+  "glycosylated hb":                  "HbA1c",
+  "mean cell hb conc":                "MCHC",
+  "mean cell hb concentration":       "MCHC",
+  "amylase":                          "Pancreatic Amylase",
+  "serum amylase":                    "Pancreatic Amylase",
+  "total amylase":                    "Pancreatic Amylase",
+  "free androgen index":              "Free Testosterone",
+  "fai":                              "Free Testosterone",
+  "igf-1":                            "IGF-1",
+  "igf1":                             "IGF-1",
+  "insulin-like growth factor":       "IGF-1",
+  "insulin-like growth factor 1":     "IGF-1",
+  "somatomedin c":                    "IGF-1"
 };
 
 
