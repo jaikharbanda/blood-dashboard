@@ -287,14 +287,43 @@ function wizardProcessNext(idx) {
     var statusEl = document.getElementById('wz-file-status-' + idx);
     if (statusEl) statusEl.textContent = msg || (pct + '%');
   }).then(function(text) {
-    entry.results = parseLabText(text);
-    entry.rawText = text;
-    // Auto-detect date from text if filename didn't provide one
-    if (!entry.date) {
-      entry.date = wizardExtractDateFromText(text);
+    // Try Randox Biomarker Tracking format first (multi-date)
+    var randoxData = (typeof parseRandoxTracking === 'function') ? parseRandoxTracking(text) : null;
+
+    if (randoxData) {
+      // Multi-date PDF: expand into one entry per date
+      var dates = Object.keys(randoxData).sort();
+      // Update current entry with the first date
+      entry.results = randoxData[dates[0]];
+      entry.date = dates[0];
+      entry.prov = 'Randox';
+      entry.status = 'done';
+      entry.rawText = text;
+
+      // Insert additional entries for remaining dates
+      for (var d = 1; d < dates.length; d++) {
+        wizardFiles.splice(idx + d, 0, {
+          file: { name: entry.file.name + ' (' + dates[d] + ')', size: entry.file.size },
+          type: entry.type,
+          results: randoxData[dates[d]],
+          date: dates[d],
+          prov: 'Randox',
+          status: 'done',
+          rawText: text
+        });
+      }
+      wizardProcessNext(idx + dates.length);
+    } else {
+      // Normal single-date format
+      entry.results = parseLabText(text);
+      entry.rawText = text;
+      // Auto-detect date from text if filename didn't provide one
+      if (!entry.date) {
+        entry.date = wizardExtractDateFromText(text);
+      }
+      entry.status = 'done';
+      wizardProcessNext(idx + 1);
     }
-    entry.status = 'done';
-    wizardProcessNext(idx + 1);
   }).catch(function(err) {
     entry.status = 'error';
     entry.errorMsg = err.message;

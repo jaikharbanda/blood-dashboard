@@ -555,7 +555,75 @@ var biomarkerAliases = {
   "igf1":                             "IGF-1",
   "insulin-like growth factor":       "IGF-1",
   "insulin-like growth factor 1":     "IGF-1",
-  "somatomedin c":                    "IGF-1"
+  "somatomedin c":                    "IGF-1",
+
+  // ── Randox-specific names ──────────────────────────────────────
+  "systolic blood pressure":          "Systolic Blood Pressure",
+  "diastolic blood pressure":         "Diastolic Blood Pressure",
+  "total cholesterol / hdl cholesterol ratio": "Total Cholesterol / HDL Ratio",
+  "estimated glomerular filtration rate (egfr)": "eGFR",
+  "anti-thyroglobulin antibody (anti-tg)": "Anti-Tg",
+  "anti-thyroid peroxidase antibody (anti-tpo)": "Anti-TPO",
+  "anti-tissue transglutaminase antibodies (coeliac disease)": "Anti-tTG",
+  "antistreptolysin o (aso)":         "ASO",
+  "parathyroid hormone (pth)":        "PTH",
+  "total prostate specific antigen (tpsa)": "Total PSA",
+  "high sensitivity c-reactive protein (hscrp)": "hs-CRP",
+  "sex hormone binding globulin":     "SHBG",
+  "immunoglobulin a (iga)":           "IgA",
+  "immunoglobulin e (ige)":           "IgE",
+  "immunoglobulin g (igg)":           "IgG",
+  "immunoglobulin m (igm)":          "IgM",
+  "thyroid stimulating hormone (tsh)": "TSH",
+  "free thyroxine (ft4)":            "Free T4",
+  "free tri-iodothyronine (ft3)":    "Free T3",
+  "mean cell haemoglobin (mch)":     "MCH",
+  "mean cell haemoglobin concentration (mchc)": "MCHC",
+  "red blood cell mean cell volume (mcv)": "MCV",
+  "red blood cell count":            "Red Blood Cell Count",
+  "alanine aminotransferase (alt)":  "ALT",
+  "aspartate aminotransferase (ast)": "AST",
+  "alkaline phosphatase (alp)":      "ALP",
+  "gamma-glutamyltransferase (ggt)": "GGT",
+  "total iron binding capacity (tibc)": "TIBC",
+  "calcium (adjusted)":              "Calcium",
+  "fibrosis-4 score (fib-4)":        "FIB-4 Score",
+  "fib-4":                           "FIB-4 Score",
+  "fib-4 score":                     "FIB-4 Score",
+  "complement component 3 (c3)":     "Complement C3",
+  "complement component 4 (c4)":     "Complement C4",
+  "c3":                              "Complement C3",
+  "c4":                              "Complement C4",
+  "thyroxine-binding globulin (tbg)": "TBG",
+  "tbg":                             "TBG",
+  "thyroxine-binding globulin":      "TBG",
+  "rheumatoid factor (rf)":          "Rheumatoid Factor",
+  "rheumatoid factor":               "Rheumatoid Factor",
+  "rf":                              "Rheumatoid Factor",
+  "apolipoprotein cii":              "Apolipoprotein CII",
+  "apo cii":                         "Apolipoprotein CII",
+  "apolipoprotein ciii":             "Apolipoprotein CIII",
+  "apo ciii":                        "Apolipoprotein CIII",
+  "fatty acid binding protein-3 (fabp-3)": "FABP-3",
+  "fabp-3":                          "FABP-3",
+  "fabp3":                           "FABP-3",
+  "total antioxidant status (tas)":  "Total Antioxidant Status",
+  "total prostate specific antigen": "Total PSA",
+  "tpsa":                            "Total PSA",
+  "bilirubin (urine)":              "Bilirubin (Urine)",
+  "glucose (urine)":                "Glucose (Urine)",
+  "ketones (urine)":                "Ketones (Urine)",
+  "nitrite (urine)":                "Nitrite (Urine)",
+  "protein (urine)":                "Protein (Urine)",
+  "red blood cells (urine)":        "Red Blood Cells (Urine)",
+  "urobilinogen (urine)":           "Urobilinogen (Urine)",
+  "white blood cells (urine)":      "White Blood Cells (Urine)",
+  "follicle stimulating hormone":    "FSH",
+  "fsh":                             "FSH",
+  "luteinising hormone":             "LH",
+  "lh":                              "LH",
+  "pancreatic amylase":              "Pancreatic Amylase",
+  "cardiovascular risk score":       "Cardiovascular Risk Score"
 };
 
 
@@ -780,6 +848,153 @@ function parseLabText(rawText) {
   }
 
   return results;
+}
+
+
+// ────────────────────────────────────────────────────────────────
+// 3b. parseRandoxTracking(rawText)
+//     Parses Randox "Biomarker Tracking" multi-date PDFs
+//     Returns null if not a Randox tracking PDF
+//     Returns {date: [{name,value,unit,confidence,matchedTo}]} otherwise
+// ────────────────────────────────────────────────────────────────
+
+function parseRandoxTracking(rawText) {
+  if (!rawText) return null;
+  if (rawText.indexOf('Biomarker Tracking') < 0) return null;
+
+  var monthMap = {
+    'jan':'01','feb':'02','mar':'03','apr':'04','may':'05','jun':'06',
+    'jul':'07','aug':'08','sep':'09','oct':'10','nov':'11','dec':'12'
+  };
+
+  function toISO(s) {
+    var m = s.match(/(\d{1,2})-([A-Za-z]{3})-(\d{4})/);
+    if (!m) return null;
+    var mon = monthMap[m[2].toLowerCase()];
+    if (!mon) return null;
+    var d = parseInt(m[1]);
+    return m[3] + '-' + mon + '-' + (d < 10 ? '0' + d : '' + d);
+  }
+
+  // Randox section headers — skip these, they're not biomarkers
+  var sectionHeaders = {};
+  ['personal health measurements','full blood count','heart health',
+   'iron status','diabetes health','metabolic syndrome','kidney health',
+   'urinalysis','liver health','pancreatic health','digestive health',
+   'nutritional health','muscle & joint health','bone health',
+   'allergy evaluation','infection & inflammation','thyroid health',
+   'hormonal health','prostate health','pituitary & adrenal health'
+  ].forEach(function(s) { sectionHeaders[s] = true; });
+
+  var lines = rawText.split(/\n/);
+  var dateResults = {};
+  var currentBiomarker = null;
+  var currentUnit = '';
+  var seen = {};
+
+  for (var i = 0; i < lines.length; i++) {
+    var trimmed = lines[i].trim();
+    if (!trimmed) continue;
+
+    // Skip page noise
+    if (/^0800\s+2545/i.test(trimmed)) continue;
+    if (/randoxhealth\.com/i.test(trimmed)) continue;
+    if (/^Biomarker\s+Tracking/i.test(trimmed)) continue;
+    if (/^CID[\s:]/i.test(trimmed)) continue;
+    if (/^D\.O\.B[\s:]/i.test(trimmed)) continue;
+    if (/^Your\s+Results/i.test(trimmed)) continue;
+    if (/^\s*Date\s+(Result|Test)/i.test(trimmed)) continue;
+    if (/^0095-RT/i.test(trimmed)) continue;
+    if (/^\d+\s*\/\s*\d+\s*$/.test(trimmed)) continue;
+    if (/^\s*(Reference\s+Range|Result|Unit)\s*$/i.test(trimmed)) continue;
+    if (/^Please\s+find\s+below/i.test(trimmed)) continue;
+
+    // Skip reference range lines
+    if (/^[<>≤≥]\s*\d/.test(trimmed)) continue;
+    if (/^\d+\.?\d*\s*[-–]\s*\d+\.?\d*\s/i.test(trimmed)) continue;
+    if (/^(Underweight|Optimal|Overweight|Obese|N\/A)\s*$/i.test(trimmed)) continue;
+
+    // Skip section headers
+    if (sectionHeaders[trimmed.toLowerCase()]) continue;
+
+    // ── Try to match data line: DD-Mon-YYYY  value  unit ──
+    var dm = trimmed.match(/^(\d{1,2}-[A-Za-z]{3}-\d{4})\s+(.+)/);
+    if (dm && currentBiomarker) {
+      var isoDate = toISO(dm[1]);
+      if (!isoDate) continue;
+
+      var rest = dm[2].trim();
+      // Skip non-numeric values like "Negative", "Normal"
+      if (/^(Negative|Normal|Not\s)/i.test(rest)) continue;
+
+      // Extract value (with optional < or > prefix) and unit
+      var vm = rest.match(/^([<>]?\s*\d+\.?\d*)\s*(.*)/);
+      if (!vm) continue;
+
+      var numVal = parseFloat(vm[1].replace(/\s/g, '').replace(/^[<>]/, ''));
+      if (isNaN(numVal)) continue;
+
+      // Parse unit: first token (may contain /, ^, superscripts, µ, %, etc.)
+      var unitPart = vm[2].trim();
+      var unit = '';
+      if (unitPart) {
+        var um = unitPart.match(/^([\w\/\^*\.\u00B2\u00B9\u00B3\u2070-\u209F\u00B5µ%\u00B0\-]+(?:\/[\w\.\u00B2\u00B9\u2070-\u209F\u00B5]+)?)/);
+        if (um) unit = um[1];
+      }
+      if (!unit && currentUnit) unit = currentUnit;
+
+      var key = isoDate + '|' + currentBiomarker.toLowerCase();
+      if (!seen[key]) {
+        seen[key] = true;
+        if (!dateResults[isoDate]) dateResults[isoDate] = [];
+
+        var matched = matchBiomarker(currentBiomarker);
+        var confidence = 'low';
+        if (matched) {
+          confidence = 'high';
+        } else {
+          for (var cat in D.categories) {
+            for (var mk in D.categories[cat]) {
+              var mkL = mk.toLowerCase(), bioL = currentBiomarker.toLowerCase();
+              if (mkL.indexOf(bioL) >= 0 || bioL.indexOf(mkL) >= 0) {
+                confidence = 'medium'; break;
+              }
+            }
+            if (confidence === 'medium') break;
+          }
+        }
+
+        dateResults[isoDate].push({
+          name: currentBiomarker,
+          value: numVal,
+          unit: unit,
+          confidence: confidence,
+          matchedTo: matched
+        });
+
+        if (unit) currentUnit = unit;
+      }
+      continue;
+    }
+
+    // ── Try to identify biomarker name lines ──
+    // Must start with letter, not a date, not a ref-range description
+    if (/^[A-Za-z]/.test(trimmed) &&
+        !/^\d{1,2}-[A-Za-z]{3}-\d{4}/.test(trimmed) &&
+        trimmed.length > 1 &&
+        !/^(Underweight|Optimal|Overweight|Obese|Low|High|Normal|Moderate|Very|risk|Indeterminate|Negative|Positive|Trace)/i.test(trimmed) &&
+        !/Rev\s*\(/.test(trimmed)) {
+      // Accept as biomarker if: matches known alias, OR is a capitalized multi-word name
+      if (matchBiomarker(trimmed) || (trimmed.length > 3 && /^[A-Z]/.test(trimmed))) {
+        currentBiomarker = trimmed;
+        currentUnit = '';
+      }
+    }
+  }
+
+  var dateKeys = Object.keys(dateResults);
+  if (dateKeys.length === 0) return null;
+  return dateResults;
 }
 
 
@@ -1190,6 +1405,38 @@ function handlePDFUpload(event) {
     statusEl.textContent = 'Text extracted. Parsing...';
     rawEl.textContent = text;
     extractedEl.style.display = 'block';
+
+    // Try Randox Biomarker Tracking format first
+    var randoxData = (typeof parseRandoxTracking === 'function') ? parseRandoxTracking(text) : null;
+    if (randoxData) {
+      var dates = Object.keys(randoxData).sort();
+      var totalAdded = 0;
+      for (var d = 0; d < dates.length; d++) {
+        var dt = dates[d];
+        if (!D.dateSources) D.dateSources = {};
+        if (!D.providerColors) D.providerColors = {};
+        if (!D.dateSources[dt]) D.dateSources[dt] = 'Randox';
+        if (!D.providerColors['Randox']) {
+          var cols = ['#3b82f6','#22c55e','#8b5cf6','#f59e0b','#ec4899','#06b6d4'];
+          D.providerColors['Randox'] = cols[Object.keys(D.providerColors).length % cols.length];
+        }
+        var items = randoxData[dt];
+        for (var r = 0; r < items.length; r++) {
+          var it = items[r];
+          var canonical = it.matchedTo || matchBiomarker(it.name) || it.name;
+          var placement = ensureMarkerInD(canonical, it.unit || '');
+          D.categories[placement.category][placement.name].v[dt] = it.value;
+          totalAdded++;
+        }
+      }
+      statusEl.textContent = 'Imported ' + totalAdded + ' results across ' + dates.length + ' dates.';
+      progressEl.style.display = 'none';
+      if (typeof render === 'function') render();
+      if (typeof scheduleSave === 'function') scheduleSave();
+      if (typeof showToast === 'function') showToast('Imported ' + totalAdded + ' results from Randox tracking PDF');
+      if (typeof closeModal === 'function') closeModal();
+      return;
+    }
 
     var results = parseLabText(text);
     statusEl.textContent = 'Found ' + results.length + ' potential results.';
