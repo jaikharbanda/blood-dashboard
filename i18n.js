@@ -56,6 +56,7 @@ var I18N = {
     outside_lab: 'outside lab range',
     lab_reference: 'Lab Reference',
     attia_reference: 'Peter Attia Optimal',
+    attia_tooltip: 'Longevity-focused optimal ranges from Dr. Peter Attia, often tighter than standard lab ranges.',
     values_legend: 'Values',
     lab_range_legend: 'Lab Range',
     attia_optimal_legend: 'Attia Optimal',
@@ -151,6 +152,8 @@ var I18N = {
     pdf_summary: 'Summary',
     pdf_markers: 'markers',
     pdf_page: 'Page',
+    unit_label: 'Unit',
+    pdf_filename: 'blood_test_report',
     pdf_footer: 'Generated from Blood Test Dashboard',
 
     // Share
@@ -202,7 +205,7 @@ var I18N = {
     // Detail modal
     date: 'Data',
     value: 'Valore',
-    provider: 'Fornitore',
+    provider: 'Laboratorio',
     change: 'Variazione',
     status: 'Stato',
     lab_range: 'Intervallo Lab',
@@ -212,6 +215,7 @@ var I18N = {
     outside_lab: 'fuori dal range lab',
     lab_reference: 'Riferimento Lab',
     attia_reference: 'Ottimale Peter Attia',
+    attia_tooltip: 'Range ottimali per la longevit\u00e0 dal Dr. Peter Attia, spesso pi\u00f9 stretti dei range di laboratorio standard.',
     values_legend: 'Valori',
     lab_range_legend: 'Intervallo Lab',
     attia_optimal_legend: 'Attia Ottimale',
@@ -222,7 +226,7 @@ var I18N = {
     pdf_import: 'Importa PDF',
     photo_import: 'Foto / Screenshot',
     test_date: 'Data Esame',
-    provider_label: 'Fornitore',
+    provider_label: 'Laboratorio',
     paste_info: 'Incolla nuovi risultati:',
     per_line: '(uno per riga)',
     add_results_btn: 'Aggiungi Risultati',
@@ -283,7 +287,7 @@ var I18N = {
     wz_process: 'Elabora {n} File',
     wz_review_title: 'Revisione Risultati Estratti',
     wz_processing: 'Elaborazione dei file in corso...',
-    wz_found: 'Trovati {n} risultati in {f} file. Imposta la data e il fornitore per ogni file, poi importa.',
+    wz_found: 'Trovati {n} risultati in {f} file. Imposta la data e il laboratorio per ogni file, poi importa.',
     wz_results: '{n} risultati',
     wz_back: 'Indietro',
     wz_import_all: 'Importa Tutti i Risultati',
@@ -307,6 +311,8 @@ var I18N = {
     pdf_summary: 'Riepilogo',
     pdf_markers: 'marcatori',
     pdf_page: 'Pagina',
+    unit_label: 'Unit\u00e0',
+    pdf_filename: 'report_analisi_sangue',
     pdf_footer: 'Generato da Blood Test Dashboard',
 
     // Share
@@ -479,23 +485,33 @@ var IT_NAMES = {
   "Insulin":"Insulina","C-peptide":"Peptide C",
   // Liver
   "ALT (SGPT)":"ALT (GPT)","AST (SGOT)":"AST (GOT)",
+  "GGT":"GGT (Gamma-GT)",
   "Alkaline Phosphatase (ALP)":"Fosfatasi Alcalina (ALP)",
   "Total Bilirubin":"Bilirubina Totale",
   "Albumin":"Albumina","Total Protein":"Proteine Totali",
-  "Globulin":"Globulina","Lipase":"Lipasi",
+  "Globulin":"Globulina","LDH":"Lattato Deidrogenasi (LDH)",
+  "Lipase":"Lipasi",
   "Pancreatic Amylase":"Amilasi Pancreatica",
   // Kidney
-  "Creatinine":"Creatinina","Urea":"Urea",
+  "Creatinine":"Creatinina","eGFR":"VFG stimato (eGFR)",
+  "Urea":"Urea",
   "Uric Acid":"Acido Urico","Cystatin C":"Cistatina C",
   "Bicarbonate":"Bicarbonato",
   // Thyroid
+  "TSH":"TSH",
   "Free T4 (FT4)":"T4 Libero (FT4)",
   "Free T3 (FT3)":"T3 Libero (FT3)",
+  "Anti-TPO":"Anticorpi Anti-TPO",
+  "Anti-Tg":"Anticorpi Anti-Tireoglobulina",
   // Hormones
   "Testosterone":"Testosterone",
   "Free Testosterone":"Testosterone Libero",
+  "SHBG":"SHBG",
+  "FSH":"FSH","LH":"LH",
   "Prolactin":"Prolattina","Cortisol":"Cortisolo",
+  "DHEA-S":"DHEA-S",
   "Oestradiol (E2)":"Estradiolo (E2)",
+  "DHT":"DHT (Diidrotestosterone)",
   // Full Blood Count
   "Haemoglobin":"Emoglobina","Haematocrit":"Ematocrito",
   "Red Blood Cell Count":"Conta Globuli Rossi",
@@ -506,9 +522,16 @@ var IT_NAMES = {
   "Eosinophil Count":"Conta Eosinofili",
   "Basophil Count":"Conta Basofili",
   "Platelet Count":"Conta Piastrine",
+  "MCV":"Volume Corpuscolare Medio (MCV)",
+  "MCH":"Emoglobina Corpuscolare Media (MCH)",
+  "MCHC":"Concentrazione Emoglobinica Corpuscolare Media (MCHC)",
+  "MPV":"Volume Piastrinico Medio (MPV)",
+  "RDW":"Ampiezza Distribuzione Eritrocitaria (RDW)",
   "ESR":"VES",
   // Iron & Minerals
   "Iron":"Ferro","Ferritin":"Ferritina",
+  "TIBC":"Capacit\u00e0 Totale di Legame del Ferro (TIBC)",
+  "UIBC":"Capacit\u00e0 Insatura di Legame del Ferro (UIBC)",
   "Transferrin":"Transferrina",
   "Transferrin Saturation":"Saturazione Transferrina",
   "Calcium (adjusted)":"Calcio (corretto)",
@@ -522,18 +545,25 @@ var IT_NAMES = {
   "Vitamin B6":"Vitamina B6",
   // Inflammation
   "CRP / hsCRP":"PCR / PCR ad alta sensibilit\u00e0",
+  "Lp-PLA2":"Lp-PLA2 (Fosfolipasi A2)",
+  "IgA":"IgA","IgG":"IgG","IgM":"IgM","IgE":"IgE",
+  "ASO":"TAS (Titolo Anti-Streptolisinico)",
   "Creatine Kinase":"Creatina Chinasi",
   "Total Antioxidant Status":"Stato Antiossidante Totale",
   // Bone & Prostate
+  "PTH":"PTH (Paratormone)",
   "Total PSA":"PSA Totale",
   // Coagulation
   "Fibrinogen":"Fibrinogeno",
   "Prothrombin Time (PT)":"Tempo di Protrombina (PT)",
+  "INR":"INR",
+  "APTT":"APTT (Tempo di Tromboplastina Parziale Attivata)",
   // Fatty Acids
   "AA/DHA Ratio":"Rapporto AA/DHA",
   "AA/EPA Ratio":"Rapporto AA/EPA",
   // Other
-  "Leptin":"Leptina","Resistin":"Resistina"
+  "Leptin":"Leptina","Resistin":"Resistina",
+  "H. pylori":"H. pylori"
 };
 
 var IT_CATS = {
@@ -576,7 +606,7 @@ var IT_DISPLAY = {
   "Triglycerides":          {u:"mg/dl", f:88.57},
   "Apolipoprotein A-I":     {u:"mg/dl", f:100},
   "Apolipoprotein B":       {u:"mg/dl", f:100},
-  "Lp(a)":                  {u:"mg/dl", f:0.4651},
+  "Lipoprotein (a)":        {u:"mg/dl", f:0.4651},
   "Glucose":                {u:"mg/dl", f:18.02},
   "Insulin":                {u:"\u00b5U/ml", f:0.1440},
   "C-peptide":              {u:"ng/ml", f:0.003021},
@@ -587,15 +617,13 @@ var IT_DISPLAY = {
   "DHT":                    {u:"pg/ml", f:290.4},
   "DHEA-S":                 {u:"\u00b5g/dl", f:36.85},
   "Cortisol":               {u:"\u00b5g/dl", f:0.03625},
-  "Free T4":                {u:"pg/ml", f:0.7770},
-  "Free T3":                {u:"pg/ml", f:0.6510},
-  "IGF-1":                  {u:"ng/ml", f:7.649},
+  "Free T4 (FT4)":          {u:"pg/ml", f:0.7770},
+  "Free T3 (FT3)":          {u:"pg/ml", f:0.6510},
   "Vitamin D":              {u:"ng/ml", f:0.4006},
-  "Vitamin B12":            {u:"pg/ml", f:1.3554},
-  "Folate":                 {u:"ng/ml", f:0.4413},
+  "Vitamin B12":            {u:"pg/ml", f:1},
+  "Folic Acid":             {u:"ng/ml", f:1},
   "Iron":                   {u:"\u00b5g/dl", f:5.585},
   "Magnesium":              {u:"mEq/l", f:2},
-  "hsCRP":                  {u:"mg/dl", f:0.1},
   "Fibrinogen":             {u:"mg/dl", f:100},
   "Haemoglobin":            {u:"g/dl", f:0.1},
   "Creatinine":             {u:"mg/dl", f:0.01131}
@@ -621,6 +649,7 @@ var IT_ATTIA = {
   "Free Testosterone":   "40\u2013240 pg/mL",
   "Oestradiol (E2)":     "30\u201350 pg/mL",
   "Vitamin D":           "40\u201360 ng/mL",
+  "Vitamin B12":         ">500 pg/mL",
   "Magnesium":           ">1.64 mEq/L",
   "Fibrinogen":          "<355 mg/dL"
 };

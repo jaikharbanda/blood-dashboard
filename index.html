@@ -12,7 +12,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .hdr-in{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .hdr h1{font-size:1.3rem;font-weight:700}.hdr h1 b{color:#818cf8}
 .hdr-meta{font-size:.82rem;color:var(--muted)}
-.search{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.88rem;width:220px;outline:none}
+.search{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.88rem;width:280px;outline:none}
 .search:focus{border-color:var(--accent)}
 .wrap{max-width:1200px;margin:0 auto;padding:16px}
 .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
@@ -20,7 +20,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .sc .n{font-size:1.6rem;font-weight:700}.sc .l{font-size:.75rem;color:var(--muted);margin-top:2px}
 .sc{cursor:pointer;transition:border-color .2s,.border-width .2s}
 .sc-active{border-width:2px!important}
-.tabs{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs-wrap{position:relative;margin-bottom:16px}
+.tabs-wrap::after{content:'';position:absolute;right:0;top:0;bottom:6px;width:40px;background:linear-gradient(to right,transparent,var(--bg));pointer-events:none;opacity:1;transition:opacity .2s}
+.tabs-wrap.scroll-end::after{opacity:0}
+.tabs{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .tabs::-webkit-scrollbar{display:none}
 .tb{padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;white-space:nowrap;background:var(--card);border:1px solid var(--border);color:var(--muted);user-select:none}
 .tb:hover{color:var(--text)}.tb.a{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -28,9 +31,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .mc{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:12px 16px;cursor:pointer;display:grid;grid-template-columns:200px 100px 1fr 70px;align-items:center;gap:14px;transition:border-color .2s}
 .mc:hover{border-color:var(--accent)}
 .mc-h{min-width:0}.mc-nm{font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mc-u{font-size:.7rem;color:var(--muted)}
+.mc-u{font-size:.65rem;color:var(--muted);opacity:.7}
 .mc-v{display:flex;flex-direction:column}
-.mc-cur{font-size:1.15rem;font-weight:700;line-height:1.2}
+.mc-cur{font-size:1.15rem;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
 .mc-tr{font-size:.75rem;font-weight:600}
 .mc-tr.up{color:var(--red)}.mc-tr.down{color:var(--green)}.mc-tr.stable{color:var(--muted)}
 .mc-hs{display:flex;flex-direction:column;align-items:flex-end;font-size:.7rem;color:var(--muted);gap:1px;white-space:nowrap}
@@ -42,7 +45,8 @@ svg.spark circle{fill:#6366f1}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;justify-content:center;align-items:center;padding:16px}
 .overlay.open{display:flex}
 .modal{background:var(--card);border-radius:14px;max-width:700px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;border:1px solid var(--border);position:relative}
-.modal-x{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.modal-x{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background .2s}
+.modal-x:hover{background:rgba(255,255,255,.08)}
 .modal h2{font-size:1.2rem;margin-bottom:3px}
 .modal .mu{color:var(--muted);font-size:.82rem;margin-bottom:14px}
 .chart-wrap{position:relative;width:100%;height:260px;margin-bottom:16px}
@@ -62,6 +66,10 @@ svg.spark circle{fill:#6366f1}
 .modal .range-info{font-size:.78rem;color:var(--muted);line-height:1.6}
 .modal .range-info .ri-label{color:#818cf8;font-weight:600}
 .modal .range-info .ri-lab{color:var(--green);font-weight:600}
+.attia-tip{position:relative;display:inline-block;cursor:help;margin-left:3px;font-size:.7rem;color:#818cf8;opacity:.7}
+.attia-tip:hover{opacity:1}
+.attia-tip .attia-tip-text{visibility:hidden;opacity:0;position:absolute;bottom:125%;left:50%;transform:translateX(-50%);background:#2a2e3d;color:var(--text);font-size:.72rem;font-weight:400;padding:8px 12px;border-radius:8px;width:240px;z-index:10;transition:opacity .2s;line-height:1.5;text-align:left;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.attia-tip:hover .attia-tip-text{visibility:visible;opacity:1}
 .prov-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.68rem;font-weight:600;color:#fff;vertical-align:middle}
 .editor{margin-top:28px;background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
 .editor summary{padding:16px 20px;cursor:pointer;font-size:1rem;font-weight:600;list-style:none}
@@ -118,9 +126,9 @@ svg.spark circle{fill:#6366f1}
 .landing-card .l-btn-s{background:var(--border);color:var(--text)}
 .landing-card .l-btn:hover{opacity:.9}
 @media(max-width:768px){
-  .mc{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:6px 10px}
+  .mc{grid-template-columns:1fr auto 80px;grid-template-rows:auto;gap:6px 10px}
   .mc-h{grid-column:1;grid-row:1}.mc-v{grid-column:2;grid-row:1;align-items:flex-end}
-  svg.spark{grid-column:1/-1;grid-row:2;height:36px}.mc-hs{display:none}
+  svg.spark{grid-column:3;grid-row:1;height:32px;min-width:60px}.mc-hs{display:none}
   .hdr h1{font-size:1.1rem}.search{width:100%}.sum{grid-template-columns:repeat(2,1fr)}.wrap{padding:10px}
   .modal{padding:18px;max-height:100vh;border-radius:0;max-width:100%;height:100vh}
   .chart-wrap{height:220px}
@@ -158,7 +166,7 @@ svg.spark circle{fill:#6366f1}
 
 <div class="wrap">
 <div class="sum" id="sum"></div>
-<div class="tabs" id="tabs"></div>
+<div class="tabs-wrap" id="tabs-wrap"><div class="tabs" id="tabs"></div></div>
 <div class="mg" id="mg"></div>
 
 <details class="editor">
@@ -450,6 +458,10 @@ function render(){
   te.querySelectorAll('.tb').forEach(function(el,i){
     el.onclick=function(){cat=cats[i];render();};
   });
+  // Scroll-fade indicator
+  var tw=document.getElementById('tabs-wrap');
+  function chkScroll(){var t=te;tw.classList.toggle('scroll-end',t.scrollLeft+t.clientWidth>=t.scrollWidth-4);}
+  te.addEventListener('scroll',chkScroll);chkScroll();
 
   // Markers
   var h='';
@@ -464,7 +476,7 @@ function render(){
       var last=m.v[ds[ds.length-1]];
       if(last==null||last===undefined)continue;
       var tr=trend(m.v);
-      var arrow=tr.d==='up'?'&#8593;':tr.d==='down'?'&#8595;':'&#8594;';
+      var arrow=tr.d==='up'?'\u2197':tr.d==='down'?'\u2198':'\u2192';
       var tc=tr.d;
       var prev=ds.slice(0,-1).reverse();
       var hist='';for(var i=0;i<Math.min(prev.length,3);i++)hist+='<span>'+fmtD(prev[i])+': '+dVal(nm,m.v[prev[i]])+'</span>';
@@ -472,7 +484,7 @@ function render(){
       h+='<div class="mc" data-cat="'+cn.replace(/"/g,'&quot;')+'" data-nm="'+nm.replace(/"/g,'&quot;')+'">';
       h+='<div class="mc-h"><div class="mc-nm"><span class="dot '+s+'"></span>'+dName(nm)+'</div><div class="mc-u">'+dUnit(nm,m.u)+'</div></div>';
       h+='<div class="mc-v"><div class="mc-cur">'+dVal(nm,last)+'</div>';
-      h+=(tr.p>0?'<div class="mc-tr '+tc+'">'+arrow+' '+tr.p+'%</div>':'<div class="mc-tr stable">&#8594; '+t('stable')+'</div>');
+      h+=(tr.p>0?'<div class="mc-tr '+tc+'">'+arrow+' '+tr.p+'%</div>':'<div class="mc-tr stable">\u2192 '+t('stable')+'</div>');
       h+='</div>'+sv+'<div class="mc-hs">'+hist+'</div></div>';
     }
   }
@@ -507,7 +519,7 @@ function openM(cn,nm){
   // Range info with clear explanation
   var rinfoHtml='<span class="ri-lab">'+t('lab_range')+':</span> '+dRange(nm,m.r);
   if(m.attia){
-    rinfoHtml+='<br><span class="ri-label">'+t('attia_ideal')+':</span> '+dAttia(nm,m.attia);
+    rinfoHtml+='<br><span class="ri-label">'+t('attia_ideal')+'<span class="attia-tip">\u24D8<span class="attia-tip-text">'+t('attia_tooltip')+'</span></span>:</span> '+dAttia(nm,m.attia);
     if(s==='optimal')rinfoHtml+=' — <span style="color:#4ade80">✓ '+t('within_attia')+'</span>';
     else if(s==='normal')rinfoHtml+=' — <span style="color:#facc15">'+t('within_lab_outside_attia')+'</span>';
     else if(s==='attention')rinfoHtml+=' — <span style="color:#fca5a5">'+t('outside_lab')+'</span>';
@@ -536,7 +548,7 @@ function openM(cn,nm){
     var st=status({v:{[di]:val},r:m.r,attia:m.attia});
     var prov=getProvider(m,di);
     var pvc=provColor(prov);
-    tb+='<tr><td>'+fmtD(di)+'</td><td><strong>'+dVal(nm,val)+'</strong> '+dUnit(nm,m.u)+'</td>';
+    tb+='<tr><td>'+fmtD(di)+'</td><td><strong>'+dVal(nm,val)+'</strong> <span style="font-size:.72rem;color:var(--muted)">'+dUnit(nm,m.u)+'</span></td>';
     tb+='<td><span class="prov-badge" style="background:'+pvc+'">'+prov+'</span></td>';
     tb+='<td>'+chg+'</td><td><span class="dot '+st+'"></span>'+statusLabel(st)+'</td></tr>';
   }
@@ -588,8 +600,8 @@ function openM(cn,nm){
       type:'box',
       yMin:rLow!=null?dVal(nm,rLow):undefined,
       yMax:rHigh!=null?dVal(nm,rHigh):undefined,
-      backgroundColor:'rgba(34,197,94,0.08)',
-      borderColor:'rgba(34,197,94,0.3)',
+      backgroundColor:'rgba(34,197,94,0.13)',
+      borderColor:'rgba(34,197,94,0.35)',
       borderWidth:1
     };
   }
@@ -598,8 +610,8 @@ function openM(cn,nm){
       type:'box',
       yMin:m.attia.low!=null?dAttiaBound(nm,m.attia.low):undefined,
       yMax:m.attia.high!=null?dAttiaBound(nm,m.attia.high):undefined,
-      backgroundColor:'rgba(99,102,241,0.1)',
-      borderColor:'rgba(99,102,241,0.35)',
+      backgroundColor:'rgba(99,102,241,0.15)',
+      borderColor:'rgba(99,102,241,0.4)',
       borderWidth:1,
       borderDash:[4,4]
     };
@@ -848,11 +860,11 @@ function buildPDF(dates){
     if(!rows.length)continue;
     var head;
     if(isLatest){
-      head=[[t('wz_name'),t('value'),'Unit',t('status'),t('lab_range')]];
+      head=[[t('wz_name'),t('value'),t('unit_label'),t('status'),t('lab_range')]];
     }else{
       var h=[t('wz_name')];
       for(var di3=0;di3<dates.length;di3++)h.push(fmtD(dates[di3]));
-      h.push('Unit');h.push(t('status'));
+      h.push(t('unit_label'));h.push(t('status'));
       head=[h];
     }
     // Category title
@@ -887,7 +899,7 @@ function buildPDF(dates){
     doc.text(t('pdf_footer'),14,doc.internal.pageSize.getHeight()-8);
     doc.text(t('pdf_page')+' '+p+'/'+pages,pw-14,doc.internal.pageSize.getHeight()-8,{align:'right'});
   }
-  doc.save('blood_test_report.pdf');
+  doc.save(t('pdf_filename')+'.pdf');
   closeExportModal();
 }
 
