@@ -53,15 +53,15 @@ function wizardRenderStep() {
 
 function wizardRenderUpload(body) {
   var html = '';
-  html += '<h2 style="text-align:center;margin-bottom:4px">Import Your Blood Tests</h2>';
-  html += '<p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:24px">Drop your blood test PDFs and photos here, or browse to select them.</p>';
+  html += '<h2 style="text-align:center;margin-bottom:4px">'+t('wz_title')+'</h2>';
+  html += '<p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:24px">'+t('wz_subtitle')+'</p>';
 
   // Drop zone
   html += '<div id="wz-dropzone" class="wz-dropzone" onclick="document.getElementById(\'wz-file-input\').click()">';
   html += '<div style="font-size:2.5rem;margin-bottom:8px">&#x1F4C1;</div>';
-  html += '<div style="font-weight:600;margin-bottom:4px">Drop files here</div>';
-  html += '<div style="font-size:.8rem;color:var(--muted)">or click to browse</div>';
-  html += '<div style="font-size:.75rem;color:var(--muted);margin-top:6px">Supports PDF, PNG, JPG</div>';
+  html += '<div style="font-weight:600;margin-bottom:4px">'+t('wz_drop')+'</div>';
+  html += '<div style="font-size:.8rem;color:var(--muted)">'+t('wz_browse')+'</div>';
+  html += '<div style="font-size:.75rem;color:var(--muted);margin-top:6px">'+t('wz_formats')+'</div>';
   html += '</div>';
   html += '<input type="file" id="wz-file-input" multiple accept=".pdf,image/*" style="display:none" onchange="wizardFilesSelected(event)">';
 
@@ -86,9 +86,9 @@ function wizardRenderUpload(body) {
 
   // Action buttons
   html += '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">';
-  html += '<button class="btn btn-s" onclick="closeWizard()" style="margin:0">Cancel</button>';
+  html += '<button class="btn btn-s" onclick="closeWizard()" style="margin:0">'+t('wz_cancel')+'</button>';
   if (wizardFiles.length > 0) {
-    html += '<button class="btn btn-p" onclick="wizardStartProcessing()" style="margin:0">Process ' + wizardFiles.length + ' File' + (wizardFiles.length > 1 ? 's' : '') + '</button>';
+    html += '<button class="btn btn-p" onclick="wizardStartProcessing()" style="margin:0">'+t('wz_process',{n:wizardFiles.length,s:wizardFiles.length>1?'s':''})+'</button>';
   }
   html += '</div>';
 
@@ -337,14 +337,14 @@ function wizardProcessNext(idx) {
 
 function wizardRenderReview(body) {
   var html = '';
-  html += '<h2 style="text-align:center;margin-bottom:4px">Review Extracted Results</h2>';
+  html += '<h2 style="text-align:center;margin-bottom:4px">'+t('wz_review_title')+'</h2>';
 
   if (wizardProcessing) {
-    html += '<p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:20px">Processing your files...</p>';
+    html += '<p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:20px">'+t('wz_processing')+'</p>';
   } else {
     var totalResults = 0;
     for (var k = 0; k < wizardFiles.length; k++) totalResults += wizardFiles[k].results.length;
-    html += '<p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:20px">Found ' + totalResults + ' results across ' + wizardFiles.length + ' file' + (wizardFiles.length > 1 ? 's' : '') + '. Set the date and provider for each file, then import.</p>';
+    html += '<p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:20px">'+t('wz_found',{n:totalResults,f:wizardFiles.length,s:wizardFiles.length>1?'s':''})+'</p>';
   }
 
   // Per-file sections
@@ -364,9 +364,9 @@ function wizardRenderReview(body) {
     html += '<span style="flex:1;font-weight:600;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(f.file.name) + '</span>';
 
     if (f.status === 'processing') {
-      html += '<span id="wz-file-status-' + i + '" style="font-size:.75rem;color:' + statusColor + '">Processing...</span>';
+      html += '<span id="wz-file-status-' + i + '" style="font-size:.75rem;color:' + statusColor + '">'+t('wz_processing')+'</span>';
     } else if (f.status === 'done') {
-      html += '<span style="font-size:.75rem;color:' + statusColor + '">' + f.results.length + ' results</span>';
+      html += '<span style="font-size:.75rem;color:' + statusColor + '">'+t('wz_results',{n:f.results.length})+'</span>';
     } else if (f.status === 'error') {
       html += '<span style="font-size:.75rem;color:' + statusColor + '">Error: ' + escHtml(f.errorMsg || 'failed') + '</span>';
     }
@@ -382,9 +382,9 @@ function wizardRenderReview(body) {
     if (f.status === 'done' && f.results.length > 0) {
       // Date + Provider row
       html += '<div style="display:flex;gap:10px;align-items:center;margin:10px 0;flex-wrap:wrap">';
-      html += '<label style="font-size:.8rem;color:var(--muted)">Date:</label>';
+      html += '<label style="font-size:.8rem;color:var(--muted)">'+t('date')+':</label>';
       html += '<input type="date" class="wz-date" data-idx="' + i + '" value="' + f.date + '" onchange="wizardFiles[' + i + '].date=this.value" style="padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.8rem">';
-      html += '<label style="font-size:.8rem;color:var(--muted)">Provider:</label>';
+      html += '<label style="font-size:.8rem;color:var(--muted)">'+t('provider')+':</label>';
       html += '<input type="text" class="wz-prov" data-idx="' + i + '" value="' + escHtml(f.prov) + '" placeholder="e.g. Randox" onchange="wizardFiles[' + i + '].prov=this.value.trim()" style="padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.8rem;width:110px">';
       html += '</div>';
 
@@ -392,10 +392,10 @@ function wizardRenderReview(body) {
       html += '<table style="width:100%;border-collapse:collapse;font-size:.78rem">';
       html += '<thead><tr>';
       html += '<th style="padding:5px 4px;text-align:center;border-bottom:1px solid var(--border);width:30px"><input type="checkbox" checked onchange="wizardToggleAll(' + i + ',this.checked)"></th>';
-      html += '<th style="padding:5px 4px;text-align:left;border-bottom:1px solid var(--border)">Name</th>';
-      html += '<th style="padding:5px 4px;text-align:right;border-bottom:1px solid var(--border);width:70px">Value</th>';
+      html += '<th style="padding:5px 4px;text-align:left;border-bottom:1px solid var(--border)">'+t('wz_name')+'</th>';
+      html += '<th style="padding:5px 4px;text-align:right;border-bottom:1px solid var(--border);width:70px">'+t('value')+'</th>';
       html += '<th style="padding:5px 4px;text-align:left;border-bottom:1px solid var(--border);width:60px">Unit</th>';
-      html += '<th style="padding:5px 4px;text-align:left;border-bottom:1px solid var(--border)">Match</th>';
+      html += '<th style="padding:5px 4px;text-align:left;border-bottom:1px solid var(--border)">'+t('wz_match')+'</th>';
       html += '<th style="padding:5px 4px;text-align:center;border-bottom:1px solid var(--border);width:24px"></th>';
       html += '</tr></thead><tbody>';
 
@@ -426,9 +426,9 @@ function wizardRenderReview(body) {
 
   // Action buttons
   html += '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">';
-  html += '<button class="btn btn-s" onclick="wizardStep=1;wizardRenderStep()" style="margin:0">Back</button>';
+  html += '<button class="btn btn-s" onclick="wizardStep=1;wizardRenderStep()" style="margin:0">'+t('wz_back')+'</button>';
   if (!wizardProcessing) {
-    html += '<button class="btn btn-p" onclick="wizardImportAll()" style="margin:0">Import All Results</button>';
+    html += '<button class="btn btn-p" onclick="wizardImportAll()" style="margin:0">'+t('wz_import_all')+'</button>';
   }
   html += '</div>';
 
@@ -496,7 +496,7 @@ function wizardImportAll() {
   }
 
   if (totalAdded === 0) {
-    alert('No results to import. Make sure files have dates set and results are checked.');
+    alert(t('wz_no_results'));
     return;
   }
 
@@ -528,9 +528,9 @@ function wizardRenderDone(body) {
   var html = '';
   html += '<div style="text-align:center;padding:40px 0">';
   html += '<div style="font-size:3rem;margin-bottom:12px">&#x2705;</div>';
-  html += '<h2 style="margin-bottom:8px">Import Complete</h2>';
-  html += '<p style="color:var(--muted);font-size:.9rem;margin-bottom:24px">Imported ' + wizardTotalImported + ' result' + (wizardTotalImported !== 1 ? 's' : '') + ' across ' + wizardDatesImported + ' test date' + (wizardDatesImported !== 1 ? 's' : '') + '.</p>';
-  html += '<button class="btn btn-p" onclick="closeWizard()" style="padding:10px 32px;font-size:.9rem">View Dashboard</button>';
+  html += '<h2 style="margin-bottom:8px">'+t('wz_done_title')+'</h2>';
+  html += '<p style="color:var(--muted);font-size:.9rem;margin-bottom:24px">'+t('wz_done_msg',{n:wizardTotalImported,s:wizardTotalImported!==1?'s':'',d:wizardDatesImported,ds:wizardDatesImported!==1?'s':''})+'</p>';
+  html += '<button class="btn btn-p" onclick="closeWizard()" style="padding:10px 32px;font-size:.9rem">'+t('wz_view')+'</button>';
   html += '</div>';
   body.innerHTML = html;
 }

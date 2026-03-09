@@ -67,11 +67,11 @@ function authSignUp() {
   errorEl.style.color = 'var(--red)';
 
   if (!email || !password) {
-    errorEl.textContent = 'Email and password are required.';
+    errorEl.textContent = t('email_pwd_required');
     return;
   }
   if (password.length < 6) {
-    errorEl.textContent = 'Password must be at least 6 characters.';
+    errorEl.textContent = t('pwd_min_length');
     return;
   }
 
@@ -86,7 +86,7 @@ function authSignUp() {
       if (result.data.user && !result.data.session) {
         // Email confirmation required
         errorEl.style.color = 'var(--green)';
-        errorEl.textContent = 'Check your email to confirm your account.';
+        errorEl.textContent = t('check_email');
       } else {
         // Auto-logged in (confirmation disabled)
         closeAuthModal();
@@ -104,7 +104,7 @@ function authSignIn() {
   errorEl.style.color = 'var(--red)';
 
   if (!email || !password) {
-    errorEl.textContent = 'Email and password are required.';
+    errorEl.textContent = t('email_pwd_required');
     return;
   }
 
@@ -124,22 +124,22 @@ function authSignIn() {
 function authSignOut() {
   if (!sb) return;
   sb.auth.signOut().then(function() {
-    if (typeof showToast === 'function') showToast('Signed out');
+    if (typeof showToast === 'function') showToast(t('signed_out'));
   });
 }
 
 // ── 4b. Reset User Data ─────────────────────────────────────────
 function resetUserData() {
   if (!currentUser) {
-    alert('You must be signed in to reset data.');
+    alert(t('must_sign_in_reset'));
     return;
   }
-  if (!confirm('This will erase ALL your saved blood test data and let you re-import.\n\nAre you sure?')) return;
+  if (!confirm(t('reset_confirm'))) return;
 
   D = createEmptyData();
   if (typeof render === 'function') render();
   saveUserData();
-  if (typeof showToast === 'function') showToast('Data reset — ready to re-import');
+  if (typeof showToast === 'function') showToast(t('data_reset'));
   if (typeof showWizard === 'function') setTimeout(showWizard, 500);
 }
 
@@ -208,7 +208,7 @@ function loadUserData() {
             }
           }
           if (typeof render === 'function') render();
-          if (typeof showToast === 'function') showToast('Data loaded');
+          if (typeof showToast === 'function') showToast(t('data_loaded'));
           // Auto-show wizard if dashboard is empty
           if (typeof wizardCheckEmpty === 'function' && wizardCheckEmpty()) {
             if (typeof showWizard === 'function') setTimeout(showWizard, 300);
@@ -225,10 +225,7 @@ function offerDataMigration() {
 
   if (currentJSON !== demoJSON) {
     // User modified data before signing up — offer to keep it
-    var save = confirm(
-      'You have data in the dashboard. Save it to your account?\n\n' +
-      'OK = save current data\nCancel = start fresh'
-    );
+    var save = confirm(t('data_migration'));
     if (save) {
       saveUserData();
     } else {
@@ -346,23 +343,23 @@ function updateSaveIndicator(state) {
   if (!el) return;
   switch (state) {
     case 'saving':
-      el.textContent = 'Saving\u2026';
+      el.textContent = t('saving');
       el.style.color = 'var(--yellow)';
       el.style.display = 'inline';
       break;
     case 'saved':
-      el.textContent = '\u2713 Saved';
+      el.textContent = t('saved');
       el.style.color = 'var(--green)';
       el.style.display = 'inline';
       setTimeout(function() { el.style.display = 'none'; }, 2500);
       break;
     case 'error':
-      el.textContent = 'Save failed';
+      el.textContent = t('save_failed');
       el.style.color = 'var(--red)';
       el.style.display = 'inline';
       break;
     case 'pending':
-      el.textContent = 'Unsaved';
+      el.textContent = t('unsaved');
       el.style.color = 'var(--muted)';
       el.style.display = 'inline';
       break;
@@ -376,7 +373,7 @@ function authResetPassword() {
   var email = document.getElementById('auth-email').value.trim();
   var errorEl = document.getElementById('auth-error');
   if (!email) {
-    errorEl.textContent = 'Enter your email address first.';
+    errorEl.textContent = t('enter_email_first');
     return;
   }
   sb.auth.resetPasswordForEmail(email, {
@@ -387,7 +384,7 @@ function authResetPassword() {
       errorEl.textContent = result.error.message;
     } else {
       errorEl.style.color = 'var(--green)';
-      errorEl.textContent = 'Password reset email sent.';
+      errorEl.textContent = t('pwd_reset_sent');
     }
   });
 }
